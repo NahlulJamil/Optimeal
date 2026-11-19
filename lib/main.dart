@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -30,6 +31,12 @@ class OptimealApp extends StatelessWidget {
           surface: AppColors.surface,
         ),
         scaffoldBackgroundColor: AppColors.background,
+      ),
+      // Dark status-bar icons on the light screens; dark screens (scanner,
+      // Food Details photo header) override this with their own region.
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: child!,
       ),
       home: const DevShell(),
     );

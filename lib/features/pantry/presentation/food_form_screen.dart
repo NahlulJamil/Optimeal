@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -175,120 +176,124 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
     final online = ref.watch(onlineStatusProvider);
     final topInset = MediaQuery.paddingOf(context).top;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 420,
-            child: _HeaderPhoto(entry: _current),
-          ),
-          Positioned.fill(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  SizedBox(height: 300 + topInset),
-                  if (_entries.any((e) => e.hasPhoto))
-                    _PhotoStrip(entries: _entries),
-                  const SizedBox(height: 16),
-                  _Sheet(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _Thumbnails(
-                          entries: _entries,
-                          selected: _selected,
-                          removable: !widget.isEdit || online,
-                          onSelect: (i) => setState(() {
-                            _selected = i;
-                            _error = null;
-                          }),
-                          onRemove: _removeEntry,
-                        ),
-                        const SizedBox(height: 20),
-                        _FormCard(
-                          key: ObjectKey(_current),
-                          entry: _current,
-                          canRemove: !widget.isEdit || online,
-                          onRemove: () => _removeEntry(_selected),
-                          onChanged: () => setState(() => _error = null),
-                        ),
-                        if (_error != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(
-                              _error!,
-                              style: const TextStyle(color: AppColors.danger),
-                            ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Light status-bar icons over the dark photo header.
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 420,
+              child: _HeaderPhoto(entry: _current),
+            ),
+            Positioned.fill(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SizedBox(height: 300 + topInset),
+                    if (_entries.any((e) => e.hasPhoto))
+                      _PhotoStrip(entries: _entries),
+                    const SizedBox(height: 16),
+                    _Sheet(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _Thumbnails(
+                            entries: _entries,
+                            selected: _selected,
+                            removable: !widget.isEdit || online,
+                            onSelect: (i) => setState(() {
+                              _selected = i;
+                              _error = null;
+                            }),
+                            onRemove: _removeEntry,
                           ),
-                        const SizedBox(height: 120),
-                      ],
+                          const SizedBox(height: 20),
+                          _FormCard(
+                            key: ObjectKey(_current),
+                            entry: _current,
+                            canRemove: !widget.isEdit || online,
+                            onRemove: () => _removeEntry(_selected),
+                            onChanged: () => setState(() => _error = null),
+                          ),
+                          if (_error != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text(
+                                _error!,
+                                style: const TextStyle(color: AppColors.danger),
+                              ),
+                            ),
+                          const SizedBox(height: 120),
+                        ],
+                      ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: topInset + 16,
+              left: 24,
+              right: 24,
+              child: Row(
+                children: [
+                  CircleIconButton(
+                    icon: Icons.arrow_back,
+                    tooltip: 'Back',
+                    background: AppColors.glassButton,
+                    shadow: false,
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'Food Details',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        shadows: [Shadow(blurRadius: 6, color: Colors.black45)],
+                      ),
+                    ),
+                  ),
+                  CircleIconButton(
+                    icon: Icons.close,
+                    tooltip: 'Close',
+                    background: AppColors.glassButton,
+                    shadow: false,
+                    onPressed: () =>
+                        Navigator.of(context).popUntil((r) => r.isFirst),
                   ),
                 ],
               ),
             ),
-          ),
-          Positioned(
-            top: topInset + 16,
-            left: 24,
-            right: 24,
-            child: Row(
-              children: [
-                CircleIconButton(
-                  icon: Icons.arrow_back,
-                  tooltip: 'Back',
-                  background: AppColors.glassButton,
-                  shadow: false,
-                  onPressed: () => Navigator.of(context).maybePop(),
-                ),
-                const Expanded(
-                  child: Text(
-                    'Food Details',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      shadows: [Shadow(blurRadius: 6, color: Colors.black45)],
+            Positioned(
+              left: 24,
+              right: 24,
+              bottom: 16,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PrimaryButton(
+                    label: widget.isEdit ? 'Save' : 'Add Food',
+                    busy: _saving,
+                    onPressed: online ? _save : null,
+                  ),
+                  if (!online)
+                    const ColoredBox(
+                      color: AppColors.background,
+                      child: OfflineHint(offlineActionMessage),
                     ),
-                  ),
-                ),
-                CircleIconButton(
-                  icon: Icons.close,
-                  tooltip: 'Close',
-                  background: AppColors.glassButton,
-                  shadow: false,
-                  onPressed: () =>
-                      Navigator.of(context).popUntil((r) => r.isFirst),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Positioned(
-            left: 24,
-            right: 24,
-            bottom: 16,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                PrimaryButton(
-                  label: widget.isEdit ? 'Save' : 'Add Food',
-                  busy: _saving,
-                  onPressed: online ? _save : null,
-                ),
-                if (!online)
-                  const ColoredBox(
-                    color: AppColors.background,
-                    child: OfflineHint(offlineActionMessage),
-                  ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
