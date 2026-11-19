@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.5
+**Versi:** 1.6
 
 **Platform:** Mobile Application (Android)
 
@@ -10,9 +10,9 @@
 
 **Framework:** Flutter
 
-**Terakhir diperbarui:** 19 November 2026
+**Terakhir diperbarui:** 20 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -565,6 +565,7 @@ Dart digunakan sebagai bahasa pemrograman untuk membangun antarmuka, logika apli
 | Navigasi & deep link | go_router |
 | Model & serialisasi | freezed, json_serializable |
 | Kamera / galeri | image_picker |
+| Pemindai barcode (mode Barcode) | mobile_scanner |
 | Kompresi gambar | flutter_image_compress |
 | Notifikasi lokal | flutter_local_notifications + timezone |
 | Cache lokal (favorit, snapshot Pantry, path foto) | Hive / Isar |
@@ -976,6 +977,10 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 2. **Aturan Utama AI** pada 13.6 diperluas dari tiga menjadi empat (ditambah alur kerja Git).
 3. **Verifikasi keluaran AI** (13.5) ditambah pemeriksaan kepatuhan alur Git.
 
+### v1.5 → v1.6
+
+1. **Pustaka `mobile_scanner`** ditambahkan pada Bagian 5.1 untuk membaca barcode kemasan di mode **Barcode** Food Scanner. Pustaka ini gratis (open source), berjalan di perangkat, dan tidak menambah layanan berbayar.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -993,6 +998,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Acuan desain | Figma "Balomba" page HiFi Optimeal | Satu sumber visual agar implementasi UI konsisten (Bagian 13.2). |
 | Bahasa UI | English (default) + Indonesia | Mengikuti desain Figma; Indonesia tetap tersedia untuk pengguna lokal. |
 | Mode Barcode | Scan barcode kemasan melalui proxy (`/analyze-barcode`) | Mempercepat input produk kemasan dan mengurangi kesalahan identifikasi manual. |
+| Pustaka barcode | `mobile_scanner` (v1.6) | Membaca barcode di perangkat secara gratis; nilai barcode dikirim ke proxy, bukan gambarnya. |
 | Nilai enum lokasi penyimpanan | `room_temperature` / `fridge` / `freezer`; label UI tetap **Pantry** / **Fridge** / **Freezer** | `room_temperature` mewakili penyimpanan suhu ruang secara eksplisit, sementara pengguna tetap melihat istilah "Pantry" yang familiar. |
 | Alur kerja Git AI | Satu fitur = satu branch dari `main` terbaru; push branch, merge ke `main`, lalu commit & push `main` | Tiga developer bekerja paralel; branch per fitur mencegah konflik dan menjaga `main` tetap bersih (Bagian 13.7). |
 

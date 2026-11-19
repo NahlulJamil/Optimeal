@@ -40,9 +40,11 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
   @override
   void initState() {
     super.initState();
+    // In add mode the caller's list is shared on purpose: entries removed here
+    // are also gone when the user goes back to the scanner.
     _entries = widget.isEdit
         ? [FoodFormEntry.fromItem(widget.item!)]
-        : [...widget.entries];
+        : (widget.entries.isEmpty ? <FoodFormEntry>[] : widget.entries);
     if (widget.isEdit) {
       ref.read(photoStoreProvider).find(widget.item!.foodId).then((file) {
         if (mounted && file != null) {

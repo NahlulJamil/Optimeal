@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 
 import 'core/theme/app_colors.dart';
 import 'core/widgets/app_bottom_nav.dart';
-import 'features/pantry/presentation/food_form_screen.dart';
 import 'features/pantry/presentation/pantry_screen.dart';
+import 'features/scanner/presentation/scanner_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: OptimealApp()));
@@ -48,13 +48,10 @@ class _DevShellState extends State<DevShell> {
   AppTab _tab = AppTab.pantry;
   final _pantryNavigator = GlobalKey<NavigatorState>();
 
+  /// The center Add button opens the Food Scanner (full screen, as in Figma).
   void _openAdd() {
     setState(() => _tab = AppTab.pantry);
-    _pantryNavigator.currentState?.push(
-      MaterialPageRoute<void>(
-        builder: (_) => const FoodFormScreen.add(entries: []),
-      ),
-    );
+    openScanner(context);
   }
 
   @override
