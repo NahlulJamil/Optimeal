@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.4
+**Versi:** 1.5
 
 **Platform:** Mobile Application (Android)
 
@@ -12,7 +12,7 @@
 
 **Terakhir diperbarui:** 19 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -970,6 +970,12 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 8. **Bahasa antarmuka** berpindah dari istilah Indonesia baku ke **English** (copy Indonesia tetap tersedia lewat Language).
 9. **Acceptance criteria** diperluas untuk barcode, Edit food details, Dark Mode, Language, dan hapus resep.
 
+### v1.4 → v1.5
+
+1. **Bagian 13.7 — Aturan Alur Kerja Git untuk AI** ditambahkan: pekerjaan fitur dikerjakan di branch baru yang dibuat dari `main` terbaru, di-push, lalu di-merge ke `main`, kemudian `main` di-commit dan di-push.
+2. **Aturan Utama AI** pada 13.6 diperluas dari tiga menjadi empat (ditambah alur kerja Git).
+3. **Verifikasi keluaran AI** (13.5) ditambah pemeriksaan kepatuhan alur Git.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -987,6 +993,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Acuan desain | Figma "Balomba" page HiFi Optimeal | Satu sumber visual agar implementasi UI konsisten (Bagian 13.2). |
 | Bahasa UI | English (default) + Indonesia | Mengikuti desain Figma; Indonesia tetap tersedia untuk pengguna lokal. |
 | Mode Barcode | Scan barcode kemasan melalui proxy (`/analyze-barcode`) | Mempercepat input produk kemasan dan mengurangi kesalahan identifikasi manual. |
+| Alur kerja Git AI | Satu fitur = satu branch dari `main` terbaru; push branch, merge ke `main`, lalu commit & push `main` | Tiga developer bekerja paralel; branch per fitur mencegah konflik dan menjaga `main` tetap bersih (Bagian 13.7). |
 
 ## 12.3 Catatan Terbuka
 
@@ -1067,11 +1074,55 @@ Sebelum hasil AI diterima, lakukan pemeriksaan berikut:
 | 4 | Batasan biaya | Tidak ada layanan yang memerlukan billing account atau kartu. |
 | 5 | Keamanan | Tidak ada API key, data pengguna lain, atau data sensitif yang bocor. |
 | 6 | Perilaku offline | State dan penonaktifan fitur sesuai Bagian 2.4 dan 7.5. |
+| 7 | Alur kerja Git | Pekerjaan fitur berada di branch sendiri, sudah di-push, dan di-merge ke `main` sesuai Bagian 13.7. |
 
 Keluaran AI yang tidak lulus pemeriksaan di atas **wajib diperbaiki atau ditolak**, bukan diterima sebagian.
 
-## 13.6 Ringkasan Tiga Aturan Utama
+## 13.6 Ringkasan Empat Aturan Utama
 
 1. **Ikuti `DevelopmentPlan.md` dan PRD** — tanpa pengecualian.
 2. **Desain harus sama dengan Figma** — jangan menambah, mengurangi, atau menggaya ulang sendiri.
 3. **Jangan keluar dari aturan PRD dan `DevelopmentPlan.md`** — bila ragu atau menemukan konflik, berhenti dan tanyakan.
+4. **Ikuti alur kerja Git (13.7)** — fitur dikerjakan di branch sendiri dari `main` terbaru, di-push, di-merge ke `main`, lalu `main` di-commit dan di-push.
+
+## 13.7 Aturan Alur Kerja Git untuk AI
+
+Aturan ini berlaku ketika AI (atau developer yang dibantu AI) mengerjakan fitur. Karena pengembangan dilakukan oleh tiga developer secara paralel dengan modul masing-masing (lihat `DevelopmentPlan.md`), setiap fitur dikerjakan terisolasi pada branch tersendiri.
+
+### 13.7.1 Alur Wajib per Fitur
+
+Urutan berikut harus dijalankan **secara berurutan**:
+
+| Langkah | Aksi | Perintah contoh |
+|---|---|---|
+| 1 | Pindah ke `main` dan tarik perubahan terbaru (**pull main**) sebelum memulai. | `git checkout main` → `git pull origin main` |
+| 2 | Buat **branch baru** dari `main` yang sudah terbaru. | `git checkout -b feature/<nama-fitur>` |
+| 3 | Kerjakan fitur **hanya di branch tersebut**, dengan commit kecil dan bermakna. | `git add <file>` → `git commit -m "feat: ..."` |
+| 4 | **Push** branch fitur ke remote. | `git push -u origin feature/<nama-fitur>` |
+| 5 | Setelah fitur selesai dan lulus verifikasi (13.5), **merge ke `main`**. | `git checkout main` → `git pull origin main` → `git merge feature/<nama-fitur>` |
+| 6 | Setelah merge, pastikan hasil di `main` **sudah di-commit dan di-push**. | `git push origin main` |
+
+### 13.7.2 Ketentuan
+
+1. **Satu fitur, satu branch.** Branch tidak boleh dipakai ulang untuk fitur lain. Fitur dari developer berbeda tidak boleh dicampur dalam satu branch.
+2. **Selalu pull `main` sebelum membuat branch** dan sebelum merge, agar branch berangkat dari kondisi terbaru dan konflik diminimalkan.
+3. **Dilarang mengerjakan fitur langsung di `main`.** Commit langsung ke `main` hanya diperbolehkan untuk perubahan dokumen kecil (mis. revisi PRD/DevelopmentPlan) atau hasil merge branch fitur.
+4. **Penamaan branch** mengikuti pola `feature/<modul>-<deskripsi-singkat>` dengan huruf kecil dan tanda hubung, selaras dengan pembagian modul pada `DevelopmentPlan.md`. Contoh: `feature/scanner-barcode-mode`, `feature/pantry-edit-food-details`, `feature/recipe-favorites`. Untuk perbaikan bug gunakan `fix/<deskripsi>`.
+5. **Penamaan commit** memakai awalan konvensional: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, diikuti deskripsi singkat.
+6. **Merge hanya setelah fitur selesai** sesuai *Definition of Done* pada `DevelopmentPlan.md` dan lulus verifikasi 13.5. Fitur yang belum selesai tidak boleh di-merge ke `main`.
+7. **`main` harus selalu dapat dijalankan.** Pastikan aplikasi dapat di-build (`flutter analyze` dan `flutter run`) sebelum merge.
+8. **Jangan menyertakan rahasia.** API key, `google-services.json` berisi kredensial sensitif, token, atau file `.env` tidak boleh di-commit (selaras dengan 7.2 dan 13.3).
+9. **Konflik merge** diselesaikan dengan mempertahankan pekerjaan kedua pihak. Bila konflik menyentuh model data atau kontrak endpoint, **berhenti dan laporkan** sesuai 13.4.
+10. **Tidak memakai operasi destruktif** (`git push --force`, `git reset --hard` pada `main`, menghapus branch milik developer lain) tanpa persetujuan eksplisit tim.
+11. **Bukan hanya fitur:** apabila AI mengerjakan perubahan lintas fitur, pecah menjadi beberapa branch sesuai fitur, bukan satu branch besar.
+
+### 13.7.3 Ringkasan Alur
+
+```
+main (pull terbaru)
+  └─ branch baru: feature/<nama-fitur>
+        ├─ kerjakan fitur + commit
+        └─ push branch
+  └─ merge ke main
+        └─ commit & push main
+```
