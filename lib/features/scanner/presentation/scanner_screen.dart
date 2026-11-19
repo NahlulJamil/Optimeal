@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
@@ -190,107 +191,110 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         .whereType<Uint8List>()
         .firstOrNull;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF262624),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(26, 16, 26, 0),
-              child: Row(
-                children: [
-                  CircleIconButton(
-                    icon: Icons.arrow_back,
-                    tooltip: 'Back',
-                    background: AppColors.glassButton,
-                    shadow: false,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                  const Expanded(
-                    child: Text(
-                      'Scanner',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF262624),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(26, 16, 26, 0),
+                child: Row(
+                  children: [
+                    CircleIconButton(
+                      icon: Icons.arrow_back,
+                      tooltip: 'Back',
+                      background: AppColors.glassButton,
+                      shadow: false,
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'Scanner',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                  CircleIconButton(
-                    icon: Icons.close,
-                    tooltip: 'Close',
-                    background: AppColors.glassButton,
-                    shadow: false,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(25, 32, 25, 26),
-                child: _Viewfinder(
-                  controller: _camera,
-                  mode: _mode,
-                  busy: _busy,
-                  online: online,
-                  error: _error,
-                  onDetect: _onBarcode,
+                    CircleIconButton(
+                      icon: Icons.close,
+                      tooltip: 'Close',
+                      background: AppColors.glassButton,
+                      shadow: false,
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _ModeButton(
-                  icon: Icons.ramen_dining_outlined,
-                  label: 'Scan Food',
-                  selected: _mode == ScanMode.food,
-                  onTap: () => setState(() {
-                    _mode = ScanMode.food;
-                    _error = null;
-                  }),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(25, 32, 25, 26),
+                  child: _Viewfinder(
+                    controller: _camera,
+                    mode: _mode,
+                    busy: _busy,
+                    online: online,
+                    error: _error,
+                    onDetect: _onBarcode,
+                  ),
                 ),
-                const SizedBox(width: 24),
-                _ModeButton(
-                  icon: Icons.qr_code_scanner,
-                  label: 'Barcode',
-                  selected: _mode == ScanMode.barcode,
-                  onTap: () => setState(() {
-                    _mode = ScanMode.barcode;
-                    _error = null;
-                  }),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(55, 36, 52, 40),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _GalleryButton(
-                    visible: _mode == ScanMode.food,
-                    enabled: online && !_busy,
-                    preview: lastPhoto,
-                    onTap: () => _capture(ImageSource.gallery),
+                  _ModeButton(
+                    icon: Icons.ramen_dining_outlined,
+                    label: 'Scan Food',
+                    selected: _mode == ScanMode.food,
+                    onTap: () => setState(() {
+                      _mode = ScanMode.food;
+                      _error = null;
+                    }),
                   ),
-                  _ShutterButton(
-                    enabled: online && !_busy && _mode == ScanMode.food,
-                    onTap: () => _capture(ImageSource.camera),
-                  ),
-                  CircleIconButton(
-                    icon: Icons.cameraswitch_outlined,
-                    tooltip: 'Switch camera',
-                    size: 50,
-                    background: AppColors.glassButton,
-                    shadow: false,
-                    onPressed: () => _camera.switchCamera(),
+                  const SizedBox(width: 24),
+                  _ModeButton(
+                    icon: Icons.qr_code_scanner,
+                    label: 'Barcode',
+                    selected: _mode == ScanMode.barcode,
+                    onTap: () => setState(() {
+                      _mode = ScanMode.barcode;
+                      _error = null;
+                    }),
                   ),
                 ],
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(55, 36, 52, 40),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _GalleryButton(
+                      visible: _mode == ScanMode.food,
+                      enabled: online && !_busy,
+                      preview: lastPhoto,
+                      onTap: () => _capture(ImageSource.gallery),
+                    ),
+                    _ShutterButton(
+                      enabled: online && !_busy && _mode == ScanMode.food,
+                      onTap: () => _capture(ImageSource.camera),
+                    ),
+                    CircleIconButton(
+                      icon: Icons.cameraswitch_outlined,
+                      tooltip: 'Switch camera',
+                      size: 50,
+                      background: AppColors.glassButton,
+                      shadow: false,
+                      onPressed: () => _camera.switchCamera(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
