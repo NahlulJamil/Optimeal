@@ -1,0 +1,47 @@
+{
+  "analyze-food": {
+    "name": "Strawberries",
+    "category": "Fruit",
+    "confidence": 0.93,
+    "visualCondition": "Color is still red, skin slightly soft.",
+    "aiNote": "Slight moisture in the container.",
+    "shelfLifeDays": {
+      "room_temperature": 1,
+      "fridge": 4,
+      "freezer": 30
+    }
+  },
+  "analyze-barcode": {
+    "name": "Greek Yogurt",
+    "category": "Dairy",
+    "brand": "Example Brand",
+    "packageSize": "500 g",
+    "confidence": 0.88,
+    "shelfLifeDays": {
+      "room_temperature": 1,
+      "fridge": 14,
+      "freezer": 60
+    }
+  },
+  "generate-recipes": {
+    "recipes": [
+      {
+        "recipeId": "r_002",
+        "name": "Strawberry Smoothie",
+        "description": "Perfect for breakfast or a hot day.",
+        "cuisine": "Western",
+        "cookingTechnique": "Blend",
+        "cookingTimeMinutes": 5,
+        "ingredientsAvailable": ["1 punnet strawberries", "500 g Greek yogurt"],
+        "ingredientsMissing": ["2 tbsp honey"],
+        "equipment": ["Blender", "Serving glass"],
+        "steps": [
+          "Wash and hull the strawberries.",
+          "Add strawberries, yogurt, and honey to the blender.",
+          "Blend until smooth.",
+          "Pour into a glass and serve chilled."
+        ]
+      }
+    ]
+  }
+}

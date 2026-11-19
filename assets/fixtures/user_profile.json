@@ -1,0 +1,12 @@
+{
+  "uid": "uid_demo",
+  "name": "Sarah",
+  "email": "sarah123@gmail.com",
+  "photoUrl": null,
+  "themeMode": "light",
+  "language": "en",
+  "notificationsEnabled": true,
+  "notificationThresholdDays": 1,
+  "createdAt": "2026-11-01T08:00:00.000Z",
+  "updatedAt": "2026-11-19T03:00:00.000Z"
+}

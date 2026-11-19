@@ -207,7 +207,7 @@ Food Scanner digunakan untuk mengenali bahan makanan melalui gambar menggunakan 
 | Kategori bahan makanan | Mis. sayur, buah, daging, bumbu, karbohidrat. |
 | Kondisi visual | Ringkasan bentuk, warna, dan karakteristik yang terdeteksi (mis. "kulit masih mengkilap, warna merah merata"). |
 | Catatan AI | Catatan opsional terkait kondisi bahan (mis. "warnanya sudah menguning, sebaiknya segera dikonsumsi"). Ditampilkan apa adanya sebagai peringatan, bukan vonis keamanan pangan. |
-| Estimasi masa simpan per lokasi | Perkiraan jumlah hari untuk tiga lokasi penyimpanan: **pantry (suhu ruang)**, **fridge (kulkas)**, dan **freezer**. |
+| Estimasi masa simpan per lokasi | Perkiraan jumlah hari untuk tiga lokasi penyimpanan: **`room_temperature` (suhu ruang, label UI "Pantry")**, **`fridge` (kulkas)**, dan **`freezer`**. |
 | Tingkat keyakinan | Nilai keyakinan identifikasi; jika rendah, sistem menyarankan pengguna mengoreksi nama bahan. |
 
 **Informasi bahan makanan yang dilengkapi pengguna:**
@@ -217,7 +217,7 @@ Food Scanner digunakan untuk mengenali bahan makanan melalui gambar menggunakan 
 | Nama bahan makanan | ✅ | AI, dapat dikoreksi | — |
 | Kategori bahan makanan | ✅ | AI, dapat dikoreksi | — |
 | Jumlah / kuantitas + satuan | ❌ (opsional) | Pengguna | Mis. 2 ikat, 500 gram, 3 buah. |
-| Lokasi penyimpanan | ✅ | Pengguna | Pilihan: pantry / fridge / freezer. |
+| Lokasi penyimpanan | ✅ | Pengguna | Nilai data: `room_temperature` / `fridge` / `freezer`. Label UI: **Pantry** / **Fridge** / **Freezer**. |
 | Tanggal pembelian | ✅ | Pengguna | Default: hari ini. |
 | Estimasi masa simpan (hari) | — | Sistem (dapat diubah pengguna) | Ditampilkan otomatis berdasarkan lokasi penyimpanan yang dipilih; dapat diubah pada form hasil scan dan Edit food details. |
 | Tanggal estimasi akhir masa simpan | — | Sistem | Dihitung otomatis: tanggal pembelian + estimasi masa simpan. |
@@ -299,7 +299,7 @@ Recipe Finder digunakan untuk memberikan rekomendasi masakan berdasarkan bahan m
 
 - Pengguna dapat membuka halaman Recipe Finder.
 - Sistem mengambil data bahan makanan dari Pantry.
-- Pengguna dapat memfilter **bahan** yang akan dipertimbangkan berdasarkan lokasi penyimpanan: **fridge, pantry, atau freezer**.
+- Pengguna dapat memfilter **bahan** yang akan dipertimbangkan berdasarkan lokasi penyimpanan: **Pantry** (`room_temperature`), **Fridge**, atau **Freezer**.
 - Pengguna dapat memfilter resep berdasarkan **cuisine** (gaya memasak per negara/daerah, mis. Indonesia, Italia, Cina, Jepang, Korea, Western).
 - Pengguna dapat memilih bahan makanan tertentu sebagai dasar pencarian resep.
 - Pengguna dapat meminta sistem menghasilkan rekomendasi resep.
@@ -314,7 +314,7 @@ Recipe Finder digunakan untuk memberikan rekomendasi masakan berdasarkan bahan m
 
 Filter ini menentukan **bahan mana** yang ikut dikirim ke AI, bukan atribut resep.
 
-> Contoh: pengguna memilih **fridge**. Sistem hanya mengirim bahan yang tersimpan di fridge (mis. bawang, tomat, wortel). Bahan yang tersimpan di pantry atau freezer **tidak** dipertimbangkan dalam pencarian resep.
+> Contoh: pengguna memilih **Fridge**. Sistem hanya mengirim bahan yang tersimpan di fridge (mis. bawang, tomat, wortel). Bahan yang tersimpan di Pantry (`room_temperature`) atau Freezer **tidak** dipertimbangkan dalam pencarian resep.
 
 **Cara kerja filter cuisine:**
 
@@ -692,7 +692,7 @@ Informasi yang disimpan:
 | `category` | String | AI (dapat dikoreksi) | Kategori bahan. |
 | `quantity` | Number? | Pengguna | Jumlah/kuantitas (opsional). Dapat diubah setelah tersimpan. |
 | `unit` | String? | Pengguna | Satuan (gram, buah, ikat, dll). |
-| `storageLocation` | Enum | Pengguna | `pantry` / `fridge` / `freezer`. |
+| `storageLocation` | Enum | Pengguna | `room_temperature` / `fridge` / `freezer`. Label UI: Pantry / Fridge / Freezer. |
 | `purchaseDate` | Timestamp | Pengguna | Tanggal pembelian. Dapat diubah setelah tersimpan. |
 | `shelfLifeDays` | Number | Sistem / Pengguna | Estimasi masa simpan (hari) sesuai lokasi penyimpanan. Dapat diubah pengguna melalui Edit food details. |
 | `estimatedEndDate` | Timestamp | Sistem | `purchaseDate + shelfLifeDays`; dihitung ulang bila `purchaseDate` berubah. |
@@ -993,6 +993,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Acuan desain | Figma "Balomba" page HiFi Optimeal | Satu sumber visual agar implementasi UI konsisten (Bagian 13.2). |
 | Bahasa UI | English (default) + Indonesia | Mengikuti desain Figma; Indonesia tetap tersedia untuk pengguna lokal. |
 | Mode Barcode | Scan barcode kemasan melalui proxy (`/analyze-barcode`) | Mempercepat input produk kemasan dan mengurangi kesalahan identifikasi manual. |
+| Nilai enum lokasi penyimpanan | `room_temperature` / `fridge` / `freezer`; label UI tetap **Pantry** / **Fridge** / **Freezer** | `room_temperature` mewakili penyimpanan suhu ruang secara eksplisit, sementara pengguna tetap melihat istilah "Pantry" yang familiar. |
 | Alur kerja Git AI | Satu fitur = satu branch dari `main` terbaru; push branch, merge ke `main`, lalu commit & push `main` | Tiga developer bekerja paralel; branch per fitur mencegah konflik dan menjaga `main` tetap bersih (Bagian 13.7). |
 
 ## 12.3 Catatan Terbuka
@@ -1003,7 +1004,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 4. **Batas kuota** (Bagian 11) merupakan nilai awal dan dapat ditinjau setelah pengujian.
 5. **Kapasitas Firestore gratis 1 GiB** cukup untuk skala lomba; perlu dipantau bila data demo diperbanyak.
 6. **UI Resep Favorit belum ada di Figma.** Desain saat ini hanya menampilkan daftar resep dengan filter dan pencarian, serta detail resep dengan tab Ingredients/Equipment/Instructions. Tab **Favorit** dan tombol favorit pada detail resep belum digambar; perlu ditambahkan ke Figma sebelum implementasi 3.8.
-7. **Label lokasi penyimpanan tidak konsisten di Figma.** Home memakai *Room / Fridge / Chiller*, sedangkan tab Pantry dan form Edit food details memakai *Pantry / Fridge / Freezer*. Standar yang dipakai PRD: **Pantry / Fridge / Freezer**; Figma perlu dirapikan.
+7. **Label lokasi penyimpanan di Figma belum seragam.** Home memakai *Room / Fridge / Chiller*, sedangkan tab Pantry dan form Edit food details memakai *Pantry / Fridge / Freezer*. **Keputusan v1.4:** nilai data `room_temperature` / `fridge` / `freezer`, label UI **Pantry / Fridge / Freezer**. Figma Home masih perlu dirapikan (Room → Pantry, Chiller → Freezer).
 8. **Mode Barcode membutuhkan endpoint baru** `POST /analyze-barcode`. Strategi identifikasi produk (lookup katalog vs prompt model) ditentukan Developer 1 pada Tahap 0/1.
 9. **Status bar pada desain bergaya iOS**, sedangkan target platform adalah Android. Komponen status bar akan diganti status bar sistem Android saat implementasi.
 10. **Aksi hapus resep** menghapus data dari cache dan favorit; perlu dialog konfirmasi agar tidak menghapus favorit pengguna secara tidak sengaja.
@@ -1125,4 +1126,5 @@ main (pull terbaru)
         └─ push branch
   └─ merge ke main
         └─ commit & push main
+```
 ```

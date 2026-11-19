@@ -73,7 +73,7 @@ Tanggung jawab:
 
 - Halaman Recipe Finder.
 - Integrasi data bahan makanan dari Pantry.
-- Filter lokasi penyimpanan bahan (fridge/pantry/freezer), filter cuisine, dan pemilihan bahan tertentu.
+- Filter lokasi penyimpanan bahan (`room_temperature`/`fridge`/`freezer`, label UI Pantry/Fridge/Freezer), filter cuisine, dan pemilihan bahan tertentu.
 - Integrasi endpoint `generate-recipes`.
 - Halaman daftar rekomendasi dan detail resep (bahan, peralatan, teknik memasak, langkah).
 - Pemilihan ilustrasi lokal berdasarkan cuisine/kategori.
@@ -179,7 +179,7 @@ Output sukses:
   visualCondition: string,       // bentuk, warna, karakteristik
   aiNote: string | null,         // mis. "warnanya sudah menguning"
   shelfLifeDays: {
-    pantry: number,
+    room_temperature: number,
     fridge: number,
     freezer: number
   }
@@ -208,7 +208,7 @@ Output sukses:
   packageSize: string | null,
   confidence: number,            // 0..1
   shelfLifeDays: {
-    pantry: number,
+    room_temperature: number,
     fridge: number,
     freezer: number
   }

@@ -1,0 +1,64 @@
+[
+  {
+    "recipeId": "r_001",
+    "name": "Spinach Pasta",
+    "description": "Creamy pasta with fresh spinach and garlic.",
+    "illustrationKey": "recipe_western_pasta",
+    "cuisine": "Western",
+    "cookingTechnique": "Saute",
+    "cookingTimeMinutes": 15,
+    "ingredientsAvailable": ["150 g pasta", "100 g fresh spinach"],
+    "ingredientsMissing": ["100 ml cooking cream", "30 g Parmesan", "2 cloves garlic"],
+    "equipment": ["Cooking pot", "Frying pan", "Strainer"],
+    "steps": [
+      "Boil the pasta until al dente, then drain.",
+      "Saute garlic and onion in olive oil until fragrant.",
+      "Add spinach and cook until wilted.",
+      "Pour in the cream and season with salt and pepper.",
+      "Combine the pasta with the sauce.",
+      "Sprinkle Parmesan and serve."
+    ],
+    "generatedAt": "2026-11-19T04:00:00.000Z",
+    "lastAccessedAt": "2026-11-19T04:00:00.000Z"
+  },
+  {
+    "recipeId": "r_002",
+    "name": "Strawberry Smoothie",
+    "description": "Perfect for breakfast or a hot day.",
+    "illustrationKey": "recipe_western_drink",
+    "cuisine": "Western",
+    "cookingTechnique": "Blend",
+    "cookingTimeMinutes": 5,
+    "ingredientsAvailable": ["1 punnet strawberries", "500 g Greek yogurt"],
+    "ingredientsMissing": ["2 tbsp honey"],
+    "equipment": ["Blender", "Serving glass"],
+    "steps": [
+      "Wash and hull the strawberries.",
+      "Add strawberries, yogurt, and honey to the blender.",
+      "Blend until smooth.",
+      "Pour into a glass and serve chilled."
+    ],
+    "generatedAt": "2026-11-19T04:05:00.000Z",
+    "lastAccessedAt": "2026-11-19T04:05:00.000Z"
+  },
+  {
+    "recipeId": "r_003",
+    "name": "Banana Oat Bowl",
+    "description": "A filling bowl for a quick morning meal.",
+    "illustrationKey": "recipe_indonesian_breakfast",
+    "cuisine": "Indonesian",
+    "cookingTechnique": "Simmer",
+    "cookingTimeMinutes": 10,
+    "ingredientsAvailable": ["1 bunch banana"],
+    "ingredientsMissing": ["50 g rolled oats", "200 ml milk", "1 tbsp honey"],
+    "equipment": ["Saucepan", "Bowl", "Spoon"],
+    "steps": [
+      "Simmer the oats in milk for five minutes.",
+      "Slice the banana.",
+      "Pour the oats into a bowl.",
+      "Top with banana slices and honey."
+    ],
+    "generatedAt": "2026-11-19T04:10:00.000Z",
+    "lastAccessedAt": "2026-11-19T04:10:00.000Z"
+  }
+]
