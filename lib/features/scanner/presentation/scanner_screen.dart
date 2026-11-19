@@ -34,7 +34,9 @@ class ScannerScreen extends ConsumerStatefulWidget {
 
 class _ScannerScreenState extends ConsumerState<ScannerScreen> {
   late ScanMode _mode = widget.initialMode;
-  final _camera = MobileScannerController(
+  late MobileScannerController _camera = _newCamera();
+
+  static MobileScannerController _newCamera() => MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     formats: const [
       BarcodeFormat.ean13,
@@ -44,6 +46,15 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
       BarcodeFormat.code128,
     ],
   );
+
+  /// A fresh controller: mobile_scanner keeps a start error in its state even
+  /// after a later start succeeds, so retrying needs a new controller.
+  void _retryCamera() {
+    final old = _camera;
+    setState(() => _camera = _newCamera());
+    unawaited(old.dispose());
+  }
+
   final _picker = ImagePicker();
   final List<FoodFormEntry> _entries = [];
   bool _busy = false;
@@ -239,6 +250,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                     online: online,
                     error: _error,
                     onDetect: _onBarcode,
+                    onRetry: _retryCamera,
                   ),
                 ),
               ),
@@ -308,6 +320,7 @@ class _Viewfinder extends StatelessWidget {
     required this.online,
     required this.error,
     required this.onDetect,
+    required this.onRetry,
   });
 
   final MobileScannerController controller;
@@ -316,6 +329,7 @@ class _Viewfinder extends StatelessWidget {
   final bool online;
   final String? error;
   final void Function(BarcodeCapture) onDetect;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -342,6 +356,7 @@ class _Viewfinder extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             MobileScanner(
+              key: ObjectKey(controller),
               controller: controller,
               onDetect: onDetect,
               errorBuilder: (context, error) => ColoredBox(
@@ -363,7 +378,7 @@ class _Viewfinder extends StatelessWidget {
                       // Asks for the permission again (or reopens the
                       // camera); found missing while testing on a phone.
                       OutlinedButton(
-                        onPressed: () => controller.start(),
+                        onPressed: onRetry,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
                           side: const BorderSide(color: Colors.white54),
