@@ -362,30 +362,35 @@ class _Viewfinder extends StatelessWidget {
               errorBuilder: (context, error) => ColoredBox(
                 color: Colors.black,
                 child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        error.errorCode ==
-                                MobileScannerErrorCode.permissionDenied
-                            ? 'Camera access is off.\n'
-                                  'Allow it to scan food and barcodes.'
-                            : 'Camera is not available.',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                      const SizedBox(height: 12),
-                      // Asks for the permission again (or reopens the
-                      // camera); found missing while testing on a phone.
-                      OutlinedButton(
-                        onPressed: onRetry,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white54),
+                  // Scrollable so the message never overflows the short
+                  // viewfinder in landscape (seen on a physical phone).
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          error.errorCode ==
+                                  MobileScannerErrorCode.permissionDenied
+                              ? 'Camera access is off.\n'
+                                    'Allow it to scan food and barcodes.'
+                              : 'Camera is not available.',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.white70),
                         ),
-                        child: const Text('Try again'),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        // Asks for the permission again (or reopens the
+                        // camera); found missing while testing on a phone.
+                        OutlinedButton(
+                          onPressed: onRetry,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white54),
+                          ),
+                          child: const Text('Try again'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
