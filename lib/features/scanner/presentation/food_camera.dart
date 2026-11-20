@@ -141,10 +141,16 @@ class FoodCameraPreview extends StatelessWidget {
           return const ColoredBox(color: Colors.black);
         }
         final size = c.value.previewSize;
+        // The front-camera preview is mirrored by the plugin. A scanner should
+        // show the real orientation so labels read correctly (feedback from a
+        // phone test), so flip it back.
+        final front = c.description.lensDirection == CameraLensDirection.front;
+        Widget preview = CameraPreview(c);
+        if (front) preview = Transform.flip(flipX: true, child: preview);
         return ColoredBox(
           color: Colors.black,
           child: size == null
-              ? CameraPreview(c)
+              ? preview
               : ClipRect(
                   child: FittedBox(
                     fit: BoxFit.cover,
@@ -152,7 +158,7 @@ class FoodCameraPreview extends StatelessWidget {
                     child: SizedBox(
                       width: size.height,
                       height: size.width,
-                      child: CameraPreview(c),
+                      child: preview,
                     ),
                   ),
                 ),
