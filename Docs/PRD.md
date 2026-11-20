@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.7
+**Versi:** 1.8
 
 **Platform:** Mobile Application (Android)
 
@@ -12,7 +12,7 @@
 
 **Terakhir diperbarui:** 20 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -133,6 +133,7 @@ Fitur autentikasi digunakan untuk mengelola akses pengguna ke aplikasi Optimeal.
 - Pengguna dapat login menggunakan akun yang telah terdaftar.
 - Sistem melakukan validasi terhadap informasi login.
 - Sistem menampilkan pesan kesalahan apabila autentikasi gagal.
+- Registrasi mengirim **link verifikasi email** (Firebase Authentication). Pengguna harus memverifikasi email sebelum masuk ke halaman utama; layar verifikasi menyediakan **Resend email** dan pemeriksaan status.
 - Pengguna dapat melakukan logout.
 - Sesi pengguna dapat dipertahankan agar tidak perlu login kembali setiap membuka aplikasi.
 - Registrasi dan login memerlukan koneksi internet. Apabila sesi masih aktif, pengguna dapat membuka aplikasi dalam mode offline (read-only).
@@ -987,6 +988,12 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 1. **Pustaka `camera`** ditambahkan pada Bagian 5.1. Mode **Scan Food** menampilkan pratinjau kamera dan memotret langsung di layar Scanner, tanpa berpindah ke aplikasi kamera bawaan HP. `image_picker` tetap dipakai untuk memilih foto dari galeri.
 2. Aplikasi dikunci pada orientasi **portrait**, sesuai desain Figma.
 
+### v1.7 → v1.8
+
+1. **Verifikasi akun memakai link email Firebase**, bukan kode OTP. Firebase Email/Password tidak menyediakan OTP bawaan, dan pengiriman kode lewat layanan email eksternal akan menambah layanan serta secret baru — bertentangan dengan prinsip nol biaya pada Bagian 5.6.
+2. **Layar Verifikasi email** ditambahkan: instruksi, tombol *I've verified my email*, *Resend email* dengan jeda 60 detik, dan *Use a different account*.
+3. **Profil `users/{uid}` dibuat saat registrasi** dengan nilai awal sesuai `Contracts.md` §3.5 (`themeMode = light`, `language = en`, `notificationsEnabled = true`, `notificationThresholdDays = 1`).
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -1008,6 +1015,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Pustaka barcode | `mobile_scanner` (v1.6) | Membaca barcode di perangkat secara gratis; nilai barcode dikirim ke proxy, bukan gambarnya. |
 | Nilai enum lokasi penyimpanan | `room_temperature` / `fridge` / `freezer`; label UI tetap **Pantry** / **Fridge** / **Freezer** | `room_temperature` mewakili penyimpanan suhu ruang secara eksplisit, sementara pengguna tetap melihat istilah "Pantry" yang familiar. |
 | Alur kerja Git AI | Satu fitur = satu branch dari `main` terbaru; push branch, merge ke `main`, lalu commit & push `main` | Tiga developer bekerja paralel; branch per fitur mencegah konflik dan menjaga `main` tetap bersih (Bagian 13.7). |
+| Verifikasi akun | Link email Firebase (bukan OTP) | Gratis, tanpa layanan email tambahan, dan sudah tersedia di Firebase Authentication. Pengguna wajib verifikasi sebelum masuk. |
 
 ## 12.3 Catatan Terbuka
 

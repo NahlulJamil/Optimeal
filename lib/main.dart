@@ -7,6 +7,10 @@ import 'package:material_ui/material_ui.dart';
 
 import 'core/theme/app_colors.dart';
 import 'core/widgets/app_bottom_nav.dart';
+import 'core/widgets/app_widgets.dart';
+import 'features/auth/application/auth_providers.dart';
+import 'features/auth/presentation/login_screen.dart';
+import 'features/auth/presentation/verify_email_screen.dart';
 import 'features/notification/application/notification_providers.dart';
 import 'features/notification/domain/notification_planner.dart';
 import 'features/pantry/presentation/food_detail_screen.dart';
@@ -42,7 +46,62 @@ class OptimealApp extends StatelessWidget {
         value: SystemUiOverlayStyle.dark,
         child: child!,
       ),
-      home: const DevShell(),
+      home: const AuthGate(),
+    );
+  }
+}
+
+/// Memilih layar berdasarkan sesi Firebase (PRD §3.1):
+/// belum login → Login, email belum diverifikasi → Verifikasi, selain itu →
+/// aplikasi utama. Sesi dipertahankan otomatis oleh FirebaseAuth.
+class AuthGate extends ConsumerWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authStateProvider);
+    return auth.when(
+      loading: () => const _AuthSplash(),
+      error: (error, _) => Scaffold(
+        backgroundColor: AppColors.background,
+        body: StateMessage(
+          icon: Icons.cloud_off,
+          title: 'Could not start your session',
+          message: 'Check your connection and try again.',
+          action: FilledButton(
+            onPressed: () => ref.invalidate(authStateProvider),
+            child: const Text('Try again'),
+          ),
+        ),
+      ),
+      data: (user) {
+        if (user == null) return const LoginScreen();
+        if (!user.emailVerified) {
+          return VerifyEmailScreen(email: user.email ?? '');
+        }
+        return const DevShell();
+      },
+    );
+  }
+}
+
+class _AuthSplash extends StatelessWidget {
+  const _AuthSplash();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: AppColors.primary,
+          ),
+        ),
+      ),
     );
   }
 }

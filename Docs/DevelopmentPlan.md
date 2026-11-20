@@ -1,8 +1,8 @@
 # 1. DEVELOPMENT PLAN
 
-**Versi:** 1.7
+**Versi:** 1.8
 
-**Mengacu pada:** PRD Optimeal v1.7
+**Mengacu pada:** PRD Optimeal v1.8
 
 Pengembangan dilakukan oleh tiga developer dengan pembagian tanggung jawab berdasarkan modul.
 
