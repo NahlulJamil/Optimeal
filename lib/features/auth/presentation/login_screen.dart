@@ -38,9 +38,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _openRegister() {
     ref.read(authControllerProvider.notifier).clearError();
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const RegisterScreen()));
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const RegisterScreen()));
   }
 
   @override
