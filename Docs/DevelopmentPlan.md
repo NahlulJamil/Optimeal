@@ -1,8 +1,8 @@
 # 1. DEVELOPMENT PLAN
 
-**Versi:** 1.6
+**Versi:** 1.7
 
-**Mengacu pada:** PRD Optimeal v1.6
+**Mengacu pada:** PRD Optimeal v1.7
 
 Pengembangan dilakukan oleh tiga developer dengan pembagian tanggung jawab berdasarkan modul.
 
@@ -52,7 +52,7 @@ Catatan: kepemilikan Worker, Security Rules, dan asset ilustrasi **wajib** ada d
 Tanggung jawab:
 
 - Implementasi akses kamera dan galeri.
-- Implementasi layar **Scanner** dengan dua mode: **Scan Food** dan **Barcode** (barcode dibaca dengan `mobile_scanner`).
+- Implementasi layar **Scanner** dengan dua mode: **Scan Food** dan **Barcode** (foto diambil di dalam aplikasi dengan `camera`, barcode dibaca dengan `mobile_scanner`).
 - Kompresi gambar sebelum dikirim ke proxy AI.
 - Integrasi endpoint `analyze-food` dan `analyze-barcode`.
 - Halaman hasil scan (nama, kategori, kondisi visual, catatan AI, estimasi masa simpan per lokasi).
