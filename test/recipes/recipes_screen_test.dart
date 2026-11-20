@@ -71,10 +71,15 @@ void main() {
     expect(find.text('15 min'), findsOneWidget);
     expect(find.text('150 g pasta'), findsOneWidget);
 
+    // The tabs sit below the fold on the small test screen.
+    await tester.ensureVisible(find.text('Equipment'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Equipment'));
     await tester.pumpAndSettle();
     expect(find.text('Cooking pot'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Instructions'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Instructions'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Boil the pasta'), findsOneWidget);
