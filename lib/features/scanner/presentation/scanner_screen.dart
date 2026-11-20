@@ -439,7 +439,7 @@ class _Viewfinder extends StatelessWidget {
     } else if (mode == ScanMode.food && food != null) {
       preview = FoodCameraPreview(camera: food);
     } else if (mode == ScanMode.barcode && barcode != null) {
-      preview = MobileScanner(
+      final scanner = MobileScanner(
         key: ObjectKey(barcode),
         controller: barcode,
         onDetect: onDetect,
@@ -448,6 +448,17 @@ class _Viewfinder extends StatelessWidget {
               error.errorCode == MobileScannerErrorCode.permissionDenied,
           onRetry: onRetryBarcode,
         ),
+      );
+      // CameraX mirrors the front-camera preview; a scanner should show the
+      // real orientation (phone test feedback), so flip it back. Detection
+      // runs on the camera frames and is not affected.
+      preview = ValueListenableBuilder<MobileScannerState>(
+        valueListenable: barcode,
+        child: scanner,
+        builder: (context, state, child) =>
+            state.cameraDirection == CameraFacing.front && state.isRunning
+            ? Transform.flip(flipX: true, child: child)
+            : child!,
       );
     } else {
       preview = const ColoredBox(color: Colors.black);
