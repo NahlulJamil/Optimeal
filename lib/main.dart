@@ -146,6 +146,7 @@ class _DevShellState extends ConsumerState<DevShell> {
   /// summary reminder opens the Pantry list.
   void _openFromNotification(String payload) {
     if (!mounted) return;
+    unawaited(markNotificationRead(ref, payload));
     setState(() => _tab = AppTab.pantry);
     final nav = _pantryNavigator.currentState;
     if (nav == null) return;

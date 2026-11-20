@@ -1,10 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/models/food_item.dart';
+import '../../auth/application/auth_providers.dart';
 import '../../pantry/application/pantry_providers.dart';
 import '../../pantry/domain/shelf_life.dart';
+import '../data/notification_record_repository.dart';
 import '../data/notification_service.dart';
 import '../domain/notification_planner.dart';
 
@@ -37,6 +41,15 @@ final notificationPlannerProvider = Provider<NotificationPlanner>(
   (ref) => const NotificationPlanner(),
 );
 
+/// Reminder history in Firestore for the signed-in user (real mode only).
+final notificationRecordRepositoryProvider =
+    Provider<NotificationRecordRepository>((ref) {
+      if (AppConfig.useMock) return const NoopNotificationRecordRepository();
+      final user = ref.watch(authStateProvider).value;
+      if (user == null) return const NoopNotificationRecordRepository();
+      return FirestoreNotificationRecordRepository(userId: user.uid);
+    });
+
 /// Keeps the scheduled reminders in sync with the pantry (PRD §3.6):
 /// rebuilt when the app opens, when pantry data changes and when the
 /// preferences change. Watch this provider once at the app root.
@@ -44,11 +57,32 @@ final notificationSyncProvider = Provider<void>((ref) {
   final settings = ref.watch(notificationSettingsProvider);
   final items = ref.watch(pantryControllerProvider).value;
   if (items == null) return;
+  final now = DateTime.now();
   final plan = ref
       .read(notificationPlannerProvider)
-      .plan(items, settings, now: DateTime.now());
-  unawaited(ref.read(notificationServiceProvider).replaceAll(plan, settings));
+      .plan(items, settings, now: now);
+  final records = ref.read(notificationRecordRepositoryProvider);
+  unawaited(() async {
+    await ref.read(notificationServiceProvider).replaceAll(plan, settings);
+    try {
+      await records.syncWithPlan(plan, now);
+    } catch (e) {
+      // History is best effort; the reminders are already scheduled.
+      debugPrint('Notification history not saved: $e');
+    }
+  }());
 });
+
+/// Called when the user opens a reminder (deep link).
+Future<void> markNotificationRead(WidgetRef ref, String foodId) async {
+  try {
+    await ref
+        .read(notificationRecordRepositoryProvider)
+        .markRead(foodId, DateTime.now());
+  } catch (e) {
+    debugPrint('Notification not marked as read: $e');
+  }
+}
 
 /// Items inside the reminder window, closest first. For the Home warning
 /// banner (Developer 1) and the in-app [ExpiringBanner].
