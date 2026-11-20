@@ -15,6 +15,7 @@ import 'features/notification/application/notification_providers.dart';
 import 'features/notification/domain/notification_planner.dart';
 import 'features/pantry/presentation/food_detail_screen.dart';
 import 'features/pantry/presentation/pantry_screen.dart';
+import 'features/recipes/presentation/recipes_screen.dart';
 import 'features/scanner/presentation/scanner_screen.dart';
 import 'firebase_options.dart';
 
@@ -122,6 +123,7 @@ class DevShell extends ConsumerStatefulWidget {
 class _DevShellState extends ConsumerState<DevShell> {
   AppTab _tab = AppTab.pantry;
   final _pantryNavigator = GlobalKey<NavigatorState>();
+  final _recipesNavigator = GlobalKey<NavigatorState>();
   StreamSubscription<String>? _taps;
 
   @override
@@ -172,12 +174,24 @@ class _DevShellState extends ConsumerState<DevShell> {
     ref.watch(notificationSyncProvider);
     return Scaffold(
       body: IndexedStack(
-        index: _tab == AppTab.pantry ? 0 : 1,
+        index: switch (_tab) {
+          AppTab.pantry => 0,
+          AppTab.recipes => 1,
+          _ => 2,
+        },
         children: [
           Navigator(
             key: _pantryNavigator,
             onGenerateRoute: (_) => MaterialPageRoute<void>(
               builder: (_) => PantryScreen(
+                onBack: () => setState(() => _tab = AppTab.home),
+              ),
+            ),
+          ),
+          Navigator(
+            key: _recipesNavigator,
+            onGenerateRoute: (_) => MaterialPageRoute<void>(
+              builder: (_) => RecipesScreen(
                 onBack: () => setState(() => _tab = AppTab.home),
               ),
             ),
@@ -201,7 +215,7 @@ class _OwnedElsewhere extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final owner = tab == AppTab.recipes ? 'Developer 3' : 'Developer 1';
+    const owner = 'Developer 1';
     return Center(
       child: Text(
         '${tab.name[0].toUpperCase()}${tab.name.substring(1)} is built by $owner.',
