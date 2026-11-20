@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "optimeal-ai",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-20",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "FIREBASE_PROJECT_ID": "optimeal-firebase",
+    "GEMINI_MODEL": "gemini-2.5-flash"
+  }
+}

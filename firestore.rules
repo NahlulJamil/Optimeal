@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Semua data milik satu pengguna hanya bisa dibaca/ditulis oleh uid tersebut.
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /pantry/{foodId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /recipes/{recipeId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /favorites/{recipeId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /notifications/{notificationId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // Katalog cadangan estimasi masa simpan: dibaca pengguna login,
+    // ditulis hanya lewat Firebase Console / Admin SDK.
+    match /foodCatalog/{category} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
