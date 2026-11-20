@@ -407,6 +407,9 @@ async function geminiJson<T>(
     throw new ApiError(429, "RATE_LIMITED", "AI quota reached");
   }
   if (!response.ok) {
+    // Detail hanya masuk log Worker, tidak pernah dikirim ke client.
+    const detail = await response.text().catch(() => "");
+    console.error("Gemini failure", response.status, detail.slice(0, 500));
     throw new ApiError(500, "AI_FAILURE", "AI request failed");
   }
 

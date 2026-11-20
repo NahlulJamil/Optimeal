@@ -3,6 +3,12 @@
 Proxy tunggal untuk semua panggilan Gemini. API key **hanya** hidup di sini,
 tidak pernah masuk ke aplikasi Flutter.
 
+**Deployed:** https://optimeal-ai.nahluljamil-a.workers.dev
+
+Model Gemini saat ini `gemini-3.8-flash` (diatur lewat `vars.GEMINI_MODEL`).
+Kalau Google mengganti nama model, cukup ubah nilai itu lalu deploy ulang —
+tidak perlu menyentuh kode.
+
 ## Endpoint
 
 | Method | Path | Auth |

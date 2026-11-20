@@ -14,6 +14,6 @@ class AppConfig {
   /// dikirim ke client.
   static const String workerBaseUrl = String.fromEnvironment(
     'WORKER_BASE_URL',
-    defaultValue: '',
+    defaultValue: 'https://optimeal-ai.nahluljamil-a.workers.dev',
   );
 }
