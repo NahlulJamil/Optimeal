@@ -179,7 +179,10 @@ class AuthTextField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -268,11 +271,7 @@ class AuthErrorBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.error_outline,
-            size: 18,
-            color: AppColors.danger,
-          ),
+          const Icon(Icons.error_outline, size: 18, color: AppColors.danger),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -326,10 +325,7 @@ class AuthSwitchLink extends StatelessWidget {
             ),
             child: Text(
               action,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ),
         ],

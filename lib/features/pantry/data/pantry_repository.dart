@@ -34,8 +34,8 @@ class FoodDraft {
 
 /// Source of truth for pantry data (DevelopmentPlan principle 6).
 ///
-/// The Firestore implementation (`users/{uid}/pantry/{foodId}`) is owned by
-/// Developer 1; until it exists the app uses [MockPantryRepository].
+/// Implementations: `FirestorePantryRepository` (`users/{uid}/pantry`) and
+/// [MockPantryRepository] (fixtures, `USE_MOCK`).
 abstract class PantryRepository {
   Future<List<FoodItem>> fetchAll();
   Future<FoodItem> add(FoodDraft draft);
@@ -130,4 +130,24 @@ class MockPantryRepository implements PantryRepository {
     await _ensureLoaded();
     _items.remove(foodId);
   }
+}
+
+/// Used for the brief moment no user is signed in (the app shows Login then).
+class SignedOutPantryRepository implements PantryRepository {
+  const SignedOutPantryRepository();
+
+  @override
+  Future<List<FoodItem>> fetchAll() async => const [];
+
+  @override
+  Future<FoodItem> add(FoodDraft draft) => _signedOut();
+
+  @override
+  Future<FoodItem> update(FoodItem item) => _signedOut();
+
+  @override
+  Future<void> delete(String foodId) => _signedOut();
+
+  static Future<Never> _signedOut() =>
+      Future.error(StateError('Sign in to change your pantry.'));
 }

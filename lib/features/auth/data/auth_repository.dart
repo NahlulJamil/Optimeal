@@ -115,7 +115,9 @@ class AuthRepository {
   Future<void> sendVerificationEmail() async {
     final user = _auth.currentUser;
     if (user == null) {
-      throw const AuthFailure('Your session has expired. Please sign in again.');
+      throw const AuthFailure(
+        'Your session has expired. Please sign in again.',
+      );
     }
     try {
       await user.sendEmailVerification();

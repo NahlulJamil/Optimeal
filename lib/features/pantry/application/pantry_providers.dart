@@ -3,14 +3,23 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/models/food_item.dart';
+import '../../auth/application/auth_providers.dart';
+import '../data/firestore_pantry_repository.dart';
 import '../data/pantry_repository.dart';
 import '../data/photo_store.dart';
 import '../domain/shelf_life.dart';
 
-final pantryRepositoryProvider = Provider<PantryRepository>(
-  (ref) => MockPantryRepository(),
-);
+/// Fixtures in mock mode (`USE_MOCK`, the default), otherwise the signed-in
+/// user's Firestore pantry. Rebuilt when the account changes, so one user's
+/// pantry never shows for another.
+final pantryRepositoryProvider = Provider<PantryRepository>((ref) {
+  if (AppConfig.useMock) return MockPantryRepository();
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return const SignedOutPantryRepository();
+  return FirestorePantryRepository(userId: user.uid);
+});
 
 final photoStoreProvider = Provider<PhotoStore>((ref) => PhotoStore());
 
@@ -21,7 +30,8 @@ class PantryController extends AsyncNotifier<List<FoodItem>> {
   PhotoStore get _photos => ref.read(photoStoreProvider);
 
   @override
-  Future<List<FoodItem>> build() async => _sorted(await _repo.fetchAll());
+  Future<List<FoodItem>> build() async =>
+      _sorted(await ref.watch(pantryRepositoryProvider).fetchAll());
 
   static List<FoodItem> _sorted(Iterable<FoodItem> items) =>
       [...items]..sort((a, b) {
