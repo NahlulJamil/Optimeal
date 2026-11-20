@@ -15,11 +15,16 @@ import '../../pantry/presentation/food_form_entry.dart';
 import '../../pantry/presentation/food_form_screen.dart';
 import '../application/scanner_providers.dart';
 import '../data/ai_client.dart';
-import '../data/image_prep.dart';
+import 'food_camera.dart';
+import 'scan_line.dart';
 
 enum ScanMode { food, barcode }
 
 /// Figma "Scan Food" (349:93) and "Scan Barcode" (355:34).
+///
+/// Scan Food uses the in-app camera (`camera` plugin): the shutter takes the
+/// photo here, without opening the phone's camera app. Barcode uses
+/// mobile_scanner. Only one of them holds the camera at a time.
 ///
 /// Every successful scan adds one entry; the Food Details form then shows all
 /// of them. Going back from the form returns here to scan another item.
@@ -32,11 +37,15 @@ class ScannerScreen extends ConsumerStatefulWidget {
   ConsumerState<ScannerScreen> createState() => _ScannerScreenState();
 }
 
-class _ScannerScreenState extends ConsumerState<ScannerScreen> {
+class _ScannerScreenState extends ConsumerState<ScannerScreen>
+    with WidgetsBindingObserver {
   late ScanMode _mode = widget.initialMode;
-  late MobileScannerController _camera = _newCamera();
+  FoodCamera? _foodCam;
+  MobileScannerController? _barcodeCam;
+  bool _switching = false;
+  bool _formOpen = false;
 
-  static MobileScannerController _newCamera() => MobileScannerController(
+  static MobileScannerController _newBarcodeCamera() => MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     formats: const [
       BarcodeFormat.ean13,
@@ -47,57 +56,126 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     ],
   );
 
-  /// A fresh controller: mobile_scanner keeps a start error in its state even
-  /// after a later start succeeds, so retrying needs a new controller.
-  void _retryCamera() {
-    final old = _camera;
-    setState(() => _camera = _newCamera());
-    unawaited(old.dispose());
-  }
-
   final _picker = ImagePicker();
   final List<FoodFormEntry> _entries = [];
   bool _busy = false;
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_openCamera(_mode));
+  }
+
+  @override
   void dispose() {
-    unawaited(_camera.dispose());
+    WidgetsBinding.instance.removeObserver(this);
+    _foodCam?.dispose();
+    unawaited(_barcodeCam?.dispose());
     super.dispose();
+  }
+
+  /// Releases the camera while the app is in the background.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final cam = _foodCam;
+    if (cam == null || _formOpen) return;
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      unawaited(cam.stop());
+    } else if (state == AppLifecycleState.resumed && !cam.isReady) {
+      unawaited(cam.start());
+    }
+  }
+
+  /// Hands the camera to the chosen mode, closing the other one first.
+  Future<void> _openCamera(ScanMode mode) async {
+    setState(() => _switching = true);
+    if (mode == ScanMode.food) {
+      final barcode = _barcodeCam;
+      _barcodeCam = null;
+      await barcode?.dispose();
+      final cam = _foodCam ??= FoodCamera();
+      if (mounted) setState(() => _switching = false);
+      await cam.start();
+    } else {
+      final food = _foodCam;
+      _foodCam = null;
+      await food?.stop();
+      food?.dispose();
+      if (!mounted) return;
+      setState(() {
+        _barcodeCam = _newBarcodeCamera();
+        _switching = false;
+      });
+    }
+  }
+
+  Future<void> _switchMode(ScanMode mode) async {
+    if (mode == _mode || _switching) return;
+    setState(() {
+      _mode = mode;
+      _error = null;
+    });
+    await _openCamera(mode);
+  }
+
+  /// Barcode retry: mobile_scanner keeps a start error in its state even
+  /// after a later start succeeds, so it needs a new controller.
+  void _retryBarcodeCamera() {
+    final old = _barcodeCam;
+    setState(() => _barcodeCam = _newBarcodeCamera());
+    unawaited(old?.dispose());
+  }
+
+  Future<void> _switchLens() async {
+    if (_mode == ScanMode.food) {
+      await _foodCam?.switchLens();
+    } else {
+      await _barcodeCam?.switchCamera();
+    }
   }
 
   bool get _online => ref.read(onlineStatusProvider);
 
-  Future<void> _capture(ImageSource source) async {
-    if (_busy || !_online) return;
+  /// Shutter: takes the photo with the in-app camera.
+  Future<void> _shoot() async {
+    final cam = _foodCam;
+    if (_busy || !_online || cam == null) return;
     setState(() => _error = null);
-    // The live preview must release the camera before the picker opens it.
-    await _camera.stop();
-    XFile? file;
+    final String path;
     try {
-      file = await _picker.pickImage(
-        source: source,
-        maxWidth: ImageLimits.uploadMaxSide.toDouble(),
-        maxHeight: ImageLimits.uploadMaxSide.toDouble(),
-        imageQuality: 85,
-      );
+      path = await cam.takePicture();
+    } on FormatException catch (e) {
+      _showError(e.message);
+      return;
     } catch (_) {
-      _showError('Could not open the camera or gallery.');
-    }
-    if (file == null) {
-      if (mounted) unawaited(_camera.start());
+      _showError('Could not take the photo. Please try again.');
       return;
     }
-    await _analyze(() async {
-      final prepared = await ref
-          .read(imagePreparerProvider)
-          .prepare(file!.path);
-      final result = await ref
-          .read(aiClientProvider)
-          .analyzeFood(prepared.upload);
-      return entryFromAnalysis(result, photo: prepared.thumbnail);
-    });
+    await _analyzePhoto(path);
   }
+
+  Future<void> _pickFromGallery() async {
+    if (_busy || !_online) return;
+    setState(() => _error = null);
+    XFile? file;
+    try {
+      file = await _picker.pickImage(source: ImageSource.gallery);
+    } catch (_) {
+      _showError('Could not open the gallery.');
+    }
+    if (file != null) await _analyzePhoto(file.path);
+  }
+
+  Future<void> _analyzePhoto(String path) => _analyze(() async {
+    final prepared = await ref.read(imagePreparerProvider).prepare(path);
+    final result = await ref
+        .read(aiClientProvider)
+        .analyzeFood(prepared.upload);
+    return entryFromAnalysis(result, photo: prepared.thumbnail);
+  });
 
   Future<void> _onBarcode(BarcodeCapture capture) async {
     if (_mode != ScanMode.barcode || _busy || !_online) return;
@@ -106,7 +184,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         .whereType<String>()
         .firstOrNull;
     if (value == null) return;
-    await _camera.stop();
+    await _barcodeCam?.stop();
     await _analyze(() async {
       final result = await ref.read(aiClientProvider).analyzeBarcode(value);
       return entryFromAnalysis(result);
@@ -133,17 +211,26 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     } finally {
       if (mounted) {
         setState(() => _busy = false);
-        unawaited(_camera.start());
+        if (_mode == ScanMode.barcode) unawaited(_barcodeCam?.start());
       }
     }
   }
 
+  /// The camera preview is paused while the form is open.
   Future<void> _openForm() async {
+    _formOpen = true;
+    await _foodCam?.pausePreview();
+    if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => FoodFormScreen.add(entries: _entries),
       ),
     );
+    _formOpen = false;
+    final cam = _foodCam;
+    if (cam != null) {
+      cam.isReady ? await cam.resumePreview() : await cam.start();
+    }
   }
 
   /// PRD §3.3 / AC 22: rescan, switch to Scan Food, or fill manually.
@@ -175,7 +262,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     if (!mounted) return;
     switch (choice) {
       case 'food':
-        setState(() => _mode = ScanMode.food);
+        await _switchMode(ScanMode.food);
       case 'manual':
         _entries.add(
           FoodFormEntry(
@@ -244,13 +331,15 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(25, 32, 25, 26),
                   child: _Viewfinder(
-                    controller: _camera,
                     mode: _mode,
+                    foodCamera: _foodCam,
+                    barcodeCamera: _barcodeCam,
+                    switching: _switching,
                     busy: _busy,
                     online: online,
                     error: _error,
                     onDetect: _onBarcode,
-                    onRetry: _retryCamera,
+                    onRetryBarcode: _retryBarcodeCamera,
                   ),
                 ),
               ),
@@ -261,20 +350,14 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                     icon: Icons.ramen_dining_outlined,
                     label: 'Scan Food',
                     selected: _mode == ScanMode.food,
-                    onTap: () => setState(() {
-                      _mode = ScanMode.food;
-                      _error = null;
-                    }),
+                    onTap: () => _switchMode(ScanMode.food),
                   ),
                   const SizedBox(width: 24),
                   _ModeButton(
                     icon: Icons.qr_code_scanner,
                     label: 'Barcode',
                     selected: _mode == ScanMode.barcode,
-                    onTap: () => setState(() {
-                      _mode = ScanMode.barcode;
-                      _error = null;
-                    }),
+                    onTap: () => _switchMode(ScanMode.barcode),
                   ),
                 ],
               ),
@@ -287,11 +370,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                       visible: _mode == ScanMode.food,
                       enabled: online && !_busy,
                       preview: lastPhoto,
-                      onTap: () => _capture(ImageSource.gallery),
+                      onTap: _pickFromGallery,
                     ),
                     _ShutterButton(
                       enabled: online && !_busy && _mode == ScanMode.food,
-                      onTap: () => _capture(ImageSource.camera),
+                      onTap: _shoot,
                     ),
                     CircleIconButton(
                       icon: Icons.cameraswitch_outlined,
@@ -299,7 +382,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
                       size: 50,
                       background: AppColors.glassButton,
                       shadow: false,
-                      onPressed: () => _camera.switchCamera(),
+                      onPressed: _busy ? null : _switchLens,
                     ),
                   ],
                 ),
@@ -314,22 +397,26 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
 
 class _Viewfinder extends StatelessWidget {
   const _Viewfinder({
-    required this.controller,
     required this.mode,
+    required this.foodCamera,
+    required this.barcodeCamera,
+    required this.switching,
     required this.busy,
     required this.online,
     required this.error,
     required this.onDetect,
-    required this.onRetry,
+    required this.onRetryBarcode,
   });
 
-  final MobileScannerController controller;
   final ScanMode mode;
+  final FoodCamera? foodCamera;
+  final MobileScannerController? barcodeCamera;
+  final bool switching;
   final bool busy;
   final bool online;
   final String? error;
   final void Function(BarcodeCapture) onDetect;
-  final VoidCallback onRetry;
+  final VoidCallback onRetryBarcode;
 
   @override
   Widget build(BuildContext context) {
@@ -344,6 +431,32 @@ class _Viewfinder extends StatelessWidget {
       message = 'Point the camera at the product barcode.';
     }
 
+    final food = foodCamera;
+    final barcode = barcodeCamera;
+    final Widget preview;
+    if (switching) {
+      preview = const ColoredBox(color: Colors.black);
+    } else if (mode == ScanMode.food && food != null) {
+      preview = FoodCameraPreview(camera: food);
+    } else if (mode == ScanMode.barcode && barcode != null) {
+      preview = MobileScanner(
+        key: ObjectKey(barcode),
+        controller: barcode,
+        onDetect: onDetect,
+        errorBuilder: (context, error) => CameraProblemView(
+          permissionDenied:
+              error.errorCode == MobileScannerErrorCode.permissionDenied,
+          onRetry: onRetryBarcode,
+        ),
+      );
+    } else {
+      preview = const ColoredBox(color: Colors.black);
+    }
+
+    // Barcode errors are drawn by MobileScanner itself; the sweep sits on
+    // top and is hidden only for food-camera problems.
+    final hasCamera = !switching && (food != null || barcode != null);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: DecoratedBox(
@@ -355,63 +468,14 @@ class _Viewfinder extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            MobileScanner(
-              key: ObjectKey(controller),
-              controller: controller,
-              onDetect: onDetect,
-              errorBuilder: (context, error) => ColoredBox(
-                color: Colors.black,
-                child: Center(
-                  // Scrollable so the message never overflows the short
-                  // viewfinder in landscape (seen on a physical phone).
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          error.errorCode ==
-                                  MobileScannerErrorCode.permissionDenied
-                              ? 'Camera access is off.\n'
-                                    'Allow it to scan food and barcodes.'
-                              : 'Camera is not available.',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        const SizedBox(height: 12),
-                        // Asks for the permission again (or reopens the
-                        // camera); found missing while testing on a phone.
-                        OutlinedButton(
-                          onPressed: onRetry,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white54),
-                          ),
-                          child: const Text('Try again'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            preview,
+            if (hasCamera)
+              ListenableBuilder(
+                listenable: food ?? const _NoListenable(),
+                builder: (context, _) => food?.problem != null
+                    ? const SizedBox.shrink()
+                    : ScanLine(active: !busy && online),
               ),
-            ),
-            // Green scan gradient from Figma (lower half of the frame).
-            const Align(
-              alignment: Alignment.bottomCenter,
-              child: FractionallySizedBox(
-                heightFactor: 0.55,
-                widthFactor: 1,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0x66005A32), Color(0x00005A32)],
-                    ),
-                  ),
-                ),
-              ),
-            ),
             if (busy)
               const ColoredBox(
                 color: Color(0x88000000),
@@ -452,6 +516,17 @@ class _Viewfinder extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Placeholder [Listenable] for Barcode mode (no food camera to watch).
+class _NoListenable implements Listenable {
+  const _NoListenable();
+
+  @override
+  void addListener(VoidCallback listener) {}
+
+  @override
+  void removeListener(VoidCallback listener) {}
 }
 
 class _ModeButton extends StatelessWidget {

@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.6
+**Versi:** 1.7
 
 **Platform:** Mobile Application (Android)
 
@@ -12,7 +12,7 @@
 
 **Terakhir diperbarui:** 20 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -564,7 +564,8 @@ Dart digunakan sebagai bahasa pemrograman untuk membangun antarmuka, logika apli
 | State management | Riverpod |
 | Navigasi & deep link | go_router |
 | Model & serialisasi | freezed, json_serializable |
-| Kamera / galeri | image_picker |
+| Kamera di dalam aplikasi (Scan Food) | camera |
+| Galeri | image_picker |
 | Pemindai barcode (mode Barcode) | mobile_scanner |
 | Kompresi gambar | flutter_image_compress |
 | Notifikasi lokal | flutter_local_notifications + timezone |
@@ -981,6 +982,11 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 
 1. **Pustaka `mobile_scanner`** ditambahkan pada Bagian 5.1 untuk membaca barcode kemasan di mode **Barcode** Food Scanner. Pustaka ini gratis (open source), berjalan di perangkat, dan tidak menambah layanan berbayar.
 
+### v1.6 → v1.7
+
+1. **Pustaka `camera`** ditambahkan pada Bagian 5.1. Mode **Scan Food** menampilkan pratinjau kamera dan memotret langsung di layar Scanner, tanpa berpindah ke aplikasi kamera bawaan HP. `image_picker` tetap dipakai untuk memilih foto dari galeri.
+2. Aplikasi dikunci pada orientasi **portrait**, sesuai desain Figma.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -998,6 +1004,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Acuan desain | Figma "Balomba" page HiFi Optimeal | Satu sumber visual agar implementasi UI konsisten (Bagian 13.2). |
 | Bahasa UI | English (default) + Indonesia | Mengikuti desain Figma; Indonesia tetap tersedia untuk pengguna lokal. |
 | Mode Barcode | Scan barcode kemasan melalui proxy (`/analyze-barcode`) | Mempercepat input produk kemasan dan mengurangi kesalahan identifikasi manual. |
+| Kamera Scan Food | `camera` (v1.7) | Foto diambil di dalam aplikasi sesuai desain Scanner di Figma; gratis dan resmi dari tim Flutter. |
 | Pustaka barcode | `mobile_scanner` (v1.6) | Membaca barcode di perangkat secara gratis; nilai barcode dikirim ke proxy, bukan gambarnya. |
 | Nilai enum lokasi penyimpanan | `room_temperature` / `fridge` / `freezer`; label UI tetap **Pantry** / **Fridge** / **Freezer** | `room_temperature` mewakili penyimpanan suhu ruang secara eksplisit, sementara pengguna tetap melihat istilah "Pantry" yang familiar. |
 | Alur kerja Git AI | Satu fitur = satu branch dari `main` terbaru; push branch, merge ke `main`, lalu commit & push `main` | Tiga developer bekerja paralel; branch per fitur mencegah konflik dan menjaga `main` tetap bersih (Bagian 13.7). |
