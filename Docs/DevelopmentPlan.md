@@ -1,8 +1,8 @@
 # 1. DEVELOPMENT PLAN
 
-**Versi:** 1.8
+**Versi:** 1.9
 
-**Mengacu pada:** PRD Optimeal v1.8
+**Mengacu pada:** PRD Optimeal v1.9
 
 Pengembangan dilakukan oleh tiga developer dengan pembagian tanggung jawab berdasarkan modul.
 
@@ -15,7 +15,7 @@ Pengembangan dilakukan oleh tiga developer dengan pembagian tanggung jawab berda
 5. **Offline-aware:** setiap fitur harus didefinisikan perilakunya saat online dan offline sejak awal, bukan ditambahkan di akhir.
 6. **Satu sumber data:** Pantry adalah sumber data tunggal untuk Recipe Finder dan Smart Notification.
 7. **AI mengikuti dokumen:** seluruh keluaran AI (kode maupun desain) wajib mengikuti PRD dan Development Plan ini, serta desain resmi di Figma. Ketentuan lengkap ada pada **PRD Bagian 13**.
-8. **Design-driven:** implementasi UI wajib mengikuti file Figma "Balomba" (page *HiFi Optimeal*) — layout, komponen, spacing, warna, tipografi, dan teks. Tidak ada desain baru tanpa persetujuan tim.
+8. **Design-driven:** implementasi UI wajib mengikuti file Figma "Balomba" (page *HiFi Optimeal*) — layout, komponen, spacing, warna, tipografi, dan teks. Tidak ada desain baru tanpa persetujuan tim. File Figma bersifat **hanya-baca**: AI dilarang mengubah apa pun di dalamnya (PRD Bagian 13.2 butir 4).
 
 9. **Branch per fitur:** setiap fitur dikerjakan di branch baru yang dibuat dari `main` terbaru (pull dahulu), di-push, lalu di-merge ke `main` dan `main` di-push. Ketentuan lengkap ada pada **PRD Bagian 13.7**.
 

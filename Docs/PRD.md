@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.8
+**Versi:** 1.9
 
 **Platform:** Mobile Application (Android)
 
@@ -12,7 +12,7 @@
 
 **Terakhir diperbarui:** 20 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -88,7 +88,7 @@ Optimeal memiliki empat fitur utama:
 14. Gambar resep menggunakan ilustrasi statis yang dibundel di dalam aplikasi, bukan gambar yang dihasilkan AI dan bukan URL dari internet.
 15. Food Scanner memiliki dua mode: **Scan Food** (kamera/galeri) dan **Barcode** (barcode kemasan produk). Keduanya memerlukan koneksi internet.
 16. Bahasa antarmuka bawaan adalah **English**, dengan opsi **Indonesia** pada menu Language.
-17. **Desain UI mengikuti file Figma "Balomba"** (page *HiFi Optimeal*) sebagai acuan visual tunggal, sesuai Bagian 13.2 butir 2.
+17. **Desain UI mengikuti file Figma "Balomba"** (page *HiFi Optimeal*) sebagai acuan visual tunggal, sesuai Bagian 13.2 butir 2. File Figma bersifat **hanya-baca** dan tidak boleh diubah oleh AI (Bagian 13.2 butir 4).
 
 ## 2.4 Mode Operasi (Online & Offline)
 
@@ -994,6 +994,12 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 2. **Layar Verifikasi email** ditambahkan: instruksi, tombol *I've verified my email*, *Resend email* dengan jeda 60 detik, dan *Use a different account*.
 3. **Profil `users/{uid}` dibuat saat registrasi** dengan nilai awal sesuai `Contracts.md` §3.5 (`themeMode = light`, `language = en`, `notificationsEnabled = true`, `notificationThresholdDays = 1`).
 
+### v1.8 → v1.9
+
+1. **File Figma ditetapkan hanya-baca bagi AI** (Bagian 13.2 butir 4). AI hanya boleh membaca dan mengekspor isi file; seluruh operasi tulis — node, properti, style, variable, komponen, halaman, komentar, dan pengaturan berbagi — dilarang.
+2. **Verifikasi keluaran AI bertambah satu butir** (Bagian 13.5 nomor 8): memastikan file Figma tidak berubah.
+3. **Ringkasan aturan utama menjadi lima butir** (Bagian 13.6), dengan aturan Figma hanya-baca sebagai butir tersendiri.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -1016,6 +1022,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Nilai enum lokasi penyimpanan | `room_temperature` / `fridge` / `freezer`; label UI tetap **Pantry** / **Fridge** / **Freezer** | `room_temperature` mewakili penyimpanan suhu ruang secara eksplisit, sementara pengguna tetap melihat istilah "Pantry" yang familiar. |
 | Alur kerja Git AI | Satu fitur = satu branch dari `main` terbaru; push branch, merge ke `main`, lalu commit & push `main` | Tiga developer bekerja paralel; branch per fitur mencegah konflik dan menjaga `main` tetap bersih (Bagian 13.7). |
 | Verifikasi akun | Link email Firebase (bukan OTP) | Gratis, tanpa layanan email tambahan, dan sudah tersedia di Firebase Authentication. Pengguna wajib verifikasi sebelum masuk. |
+| Perubahan file Figma | Dilarang — Figma hanya-baca bagi AI | Figma milik tim dan menjadi acuan visual tunggal; perubahan oleh AI berisiko merusak desain acuan dan menghilangkan jejak revisi tim (Bagian 13.2 butir 4). |
 
 ## 12.3 Catatan Terbuka
 
@@ -1049,6 +1056,16 @@ Bagian ini mengatur cara AI (asisten coding/desain berbasis AI, termasuk MCP dan
 3. **Dilarang keluar dari aturan `DevelopmentPlan.md` dan PRD.**
    AI tidak boleh menambah fitur, mengubah alur pengguna, mengubah skema data atau kontrak endpoint, menambah dependensi/layanan di luar daftar, mengubah batasan kuota/cache, atau mengubah keputusan desain yang sudah ditetapkan. Seluruh pekerjaan harus berada di dalam ruang lingkup Bagian 2 dan Bagian 9.
 
+4. **File Figma bersifat hanya-baca (read-only).**
+   File desain Figma "Balomba" adalah **milik tim dan tidak boleh diubah oleh AI dalam bentuk apa pun**. AI hanya diizinkan **membaca** dan **mengekspor** isinya untuk keperluan implementasi. Larangan ini mencakup, tetapi tidak terbatas pada:
+   - membuat, mengganti, memindah, menyembunyikan, mengganti nama, atau menghapus node, frame, halaman, komponen, *instance*, dan *variant*;
+   - mengubah properti visual: posisi, ukuran, rotasi, *auto layout*, padding, *corner radius*, isi teks, gambar, warna, *fill*, *stroke*, *effect*, dan *opacity*;
+   - mengubah, menambah, atau menghapus **style**, **color/style variable**, **design token**, dan **library component**;
+   - menempelkan hasil generasi AI ke file, termasuk menjalankan *plugin*, *shader*, atau tool tulis apa pun yang menargetkan file Figma;
+   - menambah atau menghapus komentar, serta mengubah pengaturan berbagi/*share* file.
+
+   Bila AI menemukan kekurangan atau ketidaksesuaian pada Figma, AI **wajib melaporkannya kepada tim** (sesuai 13.4), bukan memperbaikinya langsung di file. Perbaikan Figma hanya dilakukan oleh anggota tim secara manual.
+
 ## 13.3 Turunan Aturan Wajib
 
 Aturan pada 13.2 berlaku konkret pada hal-hal berikut:
@@ -1075,6 +1092,12 @@ Aturan pada 13.2 berlaku konkret pada hal-hal berikut:
 - Tidak mengaktifkan fitur tulis, scan, atau generate resep saat offline.
 - Tidak menyembunyikan tombol yang tidak tersedia; tetap ditampilkan nonaktif dengan keterangan.
 
+**Figma (hanya-baca)**
+- Hanya boleh memakai operasi baca: melihat halaman dan node, membaca style/variable, mencari node, serta **mengekspor** aset (screenshot, ikon, gambar) ke folder kerja aplikasi.
+- Dilarang memakai operasi tulis apa pun terhadap file Figma, termasuk membuat node, mengubah properti, menerapkan style, membuat komponen, mengganti nama, memindah, menghapus, dan mengubah halaman.
+- Aset hasil ekspor Figma disimpan di repo aplikasi (`assets/`), **bukan** diunggah ulang atau ditimpa ke file Figma.
+- Ketidaklengkapan desain dilaporkan ke tim, tidak ditambal di Figma.
+
 ## 13.4 Prosedur Bila Ditemukan Ketidaksesuaian
 
 Apabila AI menemukan permintaan, desain Figma, atau kode yang **bertentangan** dengan PRD/`DevelopmentPlan.md`:
@@ -1097,15 +1120,17 @@ Sebelum hasil AI diterima, lakukan pemeriksaan berikut:
 | 5 | Keamanan | Tidak ada API key, data pengguna lain, atau data sensitif yang bocor. |
 | 6 | Perilaku offline | State dan penonaktifan fitur sesuai Bagian 2.4 dan 7.5. |
 | 7 | Alur kerja Git | Pekerjaan fitur berada di branch sendiri, sudah di-push, dan di-merge ke `main` sesuai Bagian 13.7. |
+| 8 | Figma tidak berubah | Tidak ada node, halaman, komponen, style, variable, komentar, atau pengaturan berbagi di file Figma yang dibuat, diubah, dipindah, atau dihapus oleh AI. |
 
 Keluaran AI yang tidak lulus pemeriksaan di atas **wajib diperbaiki atau ditolak**, bukan diterima sebagian.
 
-## 13.6 Ringkasan Empat Aturan Utama
+## 13.6 Ringkasan Lima Aturan Utama
 
 1. **Ikuti `DevelopmentPlan.md` dan PRD** — tanpa pengecualian.
 2. **Desain harus sama dengan Figma** — jangan menambah, mengurangi, atau menggaya ulang sendiri.
-3. **Jangan keluar dari aturan PRD dan `DevelopmentPlan.md`** — bila ragu atau menemukan konflik, berhenti dan tanyakan.
-4. **Ikuti alur kerja Git (13.7)** — fitur dikerjakan di branch sendiri dari `main` terbaru, di-push, di-merge ke `main`, lalu `main` di-commit dan di-push.
+3. **Figma hanya-baca** — baca dan ekspor saja; jangan mengubah apa pun di file Figma.
+4. **Jangan keluar dari aturan PRD dan `DevelopmentPlan.md`** — bila ragu atau menemukan konflik, berhenti dan tanyakan.
+5. **Ikuti alur kerja Git (13.7)** — fitur dikerjakan di branch sendiri dari `main` terbaru, di-push, di-merge ke `main`, lalu `main` di-commit dan di-push.
 
 ## 13.7 Aturan Alur Kerja Git untuk AI
 
