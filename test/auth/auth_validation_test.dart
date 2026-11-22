@@ -84,5 +84,12 @@ void main() {
       expect(failure.code, 'some-new-code');
       expect(failure.message, 'Something went wrong. Please try again.');
     });
+
+    test('marks wrong credentials for inline display only', () {
+      expect(AuthFailure.fromCode('wrong-password').isCredential, isTrue);
+      expect(AuthFailure.fromCode('invalid-credential').isCredential, isTrue);
+      expect(AuthFailure.fromCode('email-already-in-use').isCredential, isFalse);
+      expect(AuthFailure.fromCode('network-request-failed').isCredential, isFalse);
+    });
   });
 }

@@ -32,6 +32,16 @@ class AuthController extends AsyncNotifier<void> {
         : 'Something went wrong. Please try again.';
   }
 
+  /// Kesalahan terakhir, atau `null`. Dipakai Login untuk membedakan error
+  /// kredensial (inline di bawah field sandi) dari error umum (banner).
+  AuthFailure? get failure {
+    if (!state.hasError) return null;
+    final error = state.error;
+    return error is AuthFailure ? error : null;
+  }
+
+  bool get hasCredentialError => failure?.isCredential ?? false;
+
   void clearError() {
     if (state.hasError) state = const AsyncData(null);
   }
@@ -52,6 +62,11 @@ class AuthController extends AsyncNotifier<void> {
 
   Future<bool> sendVerificationEmail() {
     return _run(_repo.sendVerificationEmail);
+  }
+
+  /// Mengirim tautan reset sandi. `true` bila permintaan berhasil dikirim.
+  Future<bool> sendPasswordReset(String email) {
+    return _run(() => _repo.sendPasswordReset(email));
   }
 
   /// `true` bila email sudah terverifikasi.

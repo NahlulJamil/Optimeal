@@ -51,3 +51,6 @@ app.*.map.json
 worker/node_modules/
 worker/.wrangler/
 worker/.dev.vars
+
+# Referensi screenshot Figma (hanya untuk perbandingan lokal)
+.figma-ref/

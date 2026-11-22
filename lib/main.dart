@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'core/theme/app_colors.dart';
+import 'core/theme/app_theme.dart';
 import 'core/widgets/app_bottom_nav.dart';
 import 'core/widgets/app_widgets.dart';
 import 'features/auth/application/auth_providers.dart';
@@ -33,14 +34,7 @@ class OptimealApp extends StatelessWidget {
     return MaterialApp(
       title: 'Optimeal',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          primary: AppColors.primary,
-          surface: AppColors.surface,
-        ),
-        scaffoldBackgroundColor: AppColors.background,
-      ),
+      theme: AppTheme.light(),
       // Dark status-bar icons on the light screens; dark screens (scanner,
       // Food Details photo header) override this with their own region.
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
