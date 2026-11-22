@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.9
+**Versi:** 1.10
 
 **Platform:** Mobile Application (Android)
 
@@ -12,7 +12,7 @@
 
 **Terakhir diperbarui:** 20 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -130,9 +130,11 @@ Fitur autentikasi digunakan untuk mengelola akses pengguna ke aplikasi Optimeal.
 **Kebutuhan fungsional:**
 
 - Pengguna dapat melakukan registrasi menggunakan informasi akun yang diperlukan.
+- Registrasi menyertakan **persetujuan Syarat & Ketentuan serta Kebijakan Privasi** berupa checkbox. Tombol daftar tidak memproses form sebelum checkbox dicentang; kedua dokumen dapat dibuka dari layar registrasi.
 - Pengguna dapat login menggunakan akun yang telah terdaftar.
 - Sistem melakukan validasi terhadap informasi login.
-- Sistem menampilkan pesan kesalahan apabila autentikasi gagal.
+- Sistem menampilkan pesan kesalahan apabila autentikasi gagal. Khusus email/sandi yang salah, pesan tampil **inline di bawah field sandi** (sesuai Figma "Login — sandi salah") dan tombol berubah menjadi **Try again**; kesalahan jaringan/server tetap tampil sebagai banner di atas form.
+- Tersedia **Lupa sandi** pada layar login: pengguna memasukkan email dan menerima **link reset sandi** dari Firebase Authentication. Demi keamanan, pesan sukses tetap ditampilkan meskipun email tidak terdaftar.
 - Registrasi mengirim **link verifikasi email** (Firebase Authentication). Pengguna harus memverifikasi email sebelum masuk ke halaman utama; layar verifikasi menyediakan **Resend email** dan pemeriksaan status.
 - Pengguna dapat melakukan logout.
 - Sesi pengguna dapat dipertahankan agar tidak perlu login kembali setiap membuka aplikasi.
@@ -1000,6 +1002,13 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 2. **Verifikasi keluaran AI bertambah satu butir** (Bagian 13.5 nomor 8): memastikan file Figma tidak berubah.
 3. **Ringkasan aturan utama menjadi lima butir** (Bagian 13.6), dengan aturan Figma hanya-baca sebagai butir tersendiri.
 
+### v1.9 → v1.10
+
+1. **Lupa sandi** ditambahkan pada layar Login (Figma "Lupa sandi?"): pengguna memasukkan email, Firebase mengirim link reset sandi. Tidak ada layanan email tambahan dan tidak ada secret baru.
+2. **Persetujuan Syarat & Ketentuan** ditambahkan pada Registrasi (Figma "Terms agreement"): checkbox wajib, tombol daftar terkunci sebelum disetujui, dan kedua dokumen dapat dibuka dalam bottom sheet. Teks legal masih ringkas dan wajib ditinjau tim sebelum rilis.
+3. **Tipografi ditetapkan:** **Inter** untuk seluruh teks UI dan **Lora** untuk wordmark "Optimeal", dibundel di `assets/fonts/` agar tetap tampil offline. Token warna disamakan dengan style Figma (`#FFFDF9`, `#1A1D1A`, `#656C66`, `#005B33`, `#EAE6DF`, `#B83B32`).
+4. **Gaya komponen auth disamakan dengan Figma:** input tinggi 54 radius 16 dengan ikon kiri, tombol utama pill 56 px, banner error `#FFF0ED`, dan navigation bar 72 px dengan tombol kembali bulat 40 px.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -1023,6 +1032,9 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Alur kerja Git AI | Satu fitur = satu branch dari `main` terbaru; push branch, merge ke `main`, lalu commit & push `main` | Tiga developer bekerja paralel; branch per fitur mencegah konflik dan menjaga `main` tetap bersih (Bagian 13.7). |
 | Verifikasi akun | Link email Firebase (bukan OTP) | Gratis, tanpa layanan email tambahan, dan sudah tersedia di Firebase Authentication. Pengguna wajib verifikasi sebelum masuk. |
 | Perubahan file Figma | Dilarang — Figma hanya-baca bagi AI | Figma milik tim dan menjadi acuan visual tunggal; perubahan oleh AI berisiko merusak desain acuan dan menghilangkan jejak revisi tim (Bagian 13.2 butir 4). |
+| Lupa sandi | Link reset via Firebase Authentication | Sudah tersedia di Firebase, tanpa layanan email tambahan maupun secret baru, dan tetap nol biaya (Bagian 5.6). |
+| Persetujuan Syarat & Ketentuan | Checkbox wajib + bottom sheet in-app | Mengikuti Figma "Terms agreement" tanpa menambah halaman atau layanan baru; teks final ditinjau tim. |
+| Tipografi | Inter + Lora dibundel di `assets/fonts/` | Sama dengan Figma, tetap tampil offline, dan tidak menambah dependensi layanan baru. |
 
 ## 12.3 Catatan Terbuka
 

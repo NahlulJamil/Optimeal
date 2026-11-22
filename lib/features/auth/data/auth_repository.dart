@@ -7,10 +7,15 @@ import 'package:flutter/foundation.dart';
 /// Detail teknis Firebase tidak pernah ditampilkan ke pengguna; hanya pesan
 /// ramah di [message] yang dipakai layar Login/Registrasi.
 class AuthFailure implements Exception {
-  const AuthFailure(this.message, {this.code = 'unknown'});
+  const AuthFailure(this.message, {this.code = 'unknown', this.isCredential = false});
 
   final String message;
   final String code;
+
+  /// `true` bila kesalahan berasal dari email/sandi yang salah. Dipakai layar
+  /// Login untuk menampilkan pesan inline di bawah field sandi (Figma
+  /// "Login — sandi salah"), bukan banner umum.
+  final bool isCredential;
 
   /// Pemetaan kode `FirebaseAuthException` ke pesan sesuai PRD §3.1
   /// ("Sistem menampilkan pesan kesalahan apabila autentikasi gagal").
@@ -32,7 +37,11 @@ class AuthFailure implements Exception {
       'requires-recent-login' => 'Please sign in again to continue.',
       _ => 'Something went wrong. Please try again.',
     };
-    return AuthFailure(message, code: code);
+    return AuthFailure(
+      message,
+      code: code,
+      isCredential: code == 'wrong-password' || code == 'invalid-credential',
+    );
   }
 
   @override
@@ -136,6 +145,19 @@ class AuthRepository {
       throw AuthFailure.fromCode(error.code);
     }
     return _auth.currentUser?.emailVerified ?? false;
+  }
+
+  /// Mengirim tautan reset sandi bawaan Firebase (PRD §3.1, v1.10).
+  ///
+  /// Firebase tidak mengungkap apakah email terdaftar, sehingga demi keamanan
+  /// layar tetap menampilkan pesan sukses meski email tidak ditemukan.
+  Future<void> sendPasswordReset(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (error) {
+      if (error.code == 'user-not-found') return;
+      throw AuthFailure.fromCode(error.code);
+    }
   }
 
   Future<void> signOut() => _auth.signOut();

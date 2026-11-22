@@ -5,6 +5,8 @@ import 'package:optimeal/features/auth/presentation/login_screen.dart';
 
 void main() {
   Future<void> pumpLogin(WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(402, 874));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: LoginScreen())),
     );
@@ -14,9 +16,10 @@ void main() {
   testWidgets('shows the sign-in form', (tester) async {
     await pumpLogin(tester);
 
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Welcome back!'), findsOneWidget);
     expect(find.text('Email'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);
+    expect(find.text('Forgot password?'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
   });
 
@@ -49,5 +52,16 @@ void main() {
 
     expect(find.text('Create your account'), findsOneWidget);
     expect(find.text('Confirm password'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
+  });
+
+  testWidgets('opens the forgot password screen', (tester) async {
+    await pumpLogin(tester);
+
+    await tester.tap(find.text('Forgot password?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Reset your password'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Send reset link'), findsOneWidget);
   });
 }
