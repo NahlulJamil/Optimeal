@@ -7,14 +7,14 @@
     "quantity": 1,
     "unit": "punnet",
     "storageLocation": "fridge",
-    "purchaseDate": "2026-11-07T00:00:00.000Z",
+    "purchaseDate": "2026-11-19T00:00:00.000Z",
     "shelfLifeDays": 4,
-    "estimatedEndDate": "2026-11-11T00:00:00.000Z",
+    "estimatedEndDate": "2026-11-23T00:00:00.000Z",
     "visualCondition": "Starting to soften, color is still red.",
     "aiNote": "Slight moisture in the container, no visible mold.",
     "hasPhoto": true,
-    "createdAt": "2026-11-07T03:12:44.000Z",
-    "updatedAt": "2026-11-07T03:12:44.000Z"
+    "createdAt": "2026-11-19T03:12:44.000Z",
+    "updatedAt": "2026-11-19T03:12:44.000Z"
   },
   {
     "foodId": "f_002",
@@ -24,14 +24,14 @@
     "quantity": 200,
     "unit": "g",
     "storageLocation": "fridge",
-    "purchaseDate": "2026-11-09T00:00:00.000Z",
+    "purchaseDate": "2026-11-21T00:00:00.000Z",
     "shelfLifeDays": 4,
-    "estimatedEndDate": "2026-11-13T00:00:00.000Z",
+    "estimatedEndDate": "2026-11-25T00:00:00.000Z",
     "visualCondition": "Leaves are fresh green, stems firm.",
     "aiNote": null,
     "hasPhoto": true,
-    "createdAt": "2026-11-09T02:20:10.000Z",
-    "updatedAt": "2026-11-09T02:20:10.000Z"
+    "createdAt": "2026-11-21T02:20:10.000Z",
+    "updatedAt": "2026-11-21T02:20:10.000Z"
   },
   {
     "foodId": "f_003",
@@ -41,14 +41,14 @@
     "quantity": 1,
     "unit": "carton",
     "storageLocation": "fridge",
-    "purchaseDate": "2026-11-10T00:00:00.000Z",
+    "purchaseDate": "2026-11-21T00:00:00.000Z",
     "shelfLifeDays": 5,
-    "estimatedEndDate": "2026-11-15T00:00:00.000Z",
+    "estimatedEndDate": "2026-11-26T00:00:00.000Z",
     "visualCondition": "Sealed carton, no visible damage.",
     "aiNote": null,
     "hasPhoto": true,
-    "createdAt": "2026-11-10T01:05:00.000Z",
-    "updatedAt": "2026-11-10T01:05:00.000Z"
+    "createdAt": "2026-11-21T01:05:00.000Z",
+    "updatedAt": "2026-11-21T01:05:00.000Z"
   },
   {
     "foodId": "f_004",
@@ -58,14 +58,14 @@
     "quantity": 1,
     "unit": "bunch",
     "storageLocation": "room_temperature",
-    "purchaseDate": "2026-11-18T00:00:00.000Z",
-    "shelfLifeDays": 3,
-    "estimatedEndDate": "2026-11-21T00:00:00.000Z",
+    "purchaseDate": "2026-11-22T00:00:00.000Z",
+    "shelfLifeDays": 5,
+    "estimatedEndDate": "2026-11-27T00:00:00.000Z",
     "visualCondition": "Yellow skin with slight brown speckles.",
     "aiNote": "Best consumed within two days.",
     "hasPhoto": true,
-    "createdAt": "2026-11-18T05:40:00.000Z",
-    "updatedAt": "2026-11-18T05:40:00.000Z"
+    "createdAt": "2026-11-22T05:40:00.000Z",
+    "updatedAt": "2026-11-22T05:40:00.000Z"
   },
   {
     "foodId": "f_005",
@@ -75,13 +75,13 @@
     "quantity": 500,
     "unit": "g",
     "storageLocation": "fridge",
-    "purchaseDate": "2026-11-15T00:00:00.000Z",
+    "purchaseDate": "2026-11-22T00:00:00.000Z",
     "shelfLifeDays": 8,
-    "estimatedEndDate": "2026-11-23T00:00:00.000Z",
+    "estimatedEndDate": "2026-11-30T00:00:00.000Z",
     "visualCondition": "Sealed tub.",
     "aiNote": null,
     "hasPhoto": false,
-    "createdAt": "2026-11-15T04:10:00.000Z",
-    "updatedAt": "2026-11-15T04:10:00.000Z"
+    "createdAt": "2026-11-22T04:10:00.000Z",
+    "updatedAt": "2026-11-22T04:10:00.000Z"
   }
 ]

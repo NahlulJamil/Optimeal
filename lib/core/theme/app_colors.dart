@@ -18,6 +18,12 @@ abstract final class AppColors {
   static const Color danger = Color(0xFFB83B32);
   static const Color dangerSoft = Color(0xFFFFF0ED);
   static const Color warning = Color(0xFFF2994A);
+
+  /// Home summary tile (Figma "Room / Fridge / Chiller" cards, `#F8F7F2`).
+  static const Color statTile = Color(0xFFF8F7F2);
+
+  /// Recipe ingredient chip on Home (Figma `#F4F7F4`).
+  static const Color tag = Color(0xFFF4F7F4);
   static const Color navInactive = Color(0xFF8E8E8E);
   static const Color scannerOverlay = Color(0xB3262624);
   static const Color glassButton = Color(0xCCE6E6E3);
