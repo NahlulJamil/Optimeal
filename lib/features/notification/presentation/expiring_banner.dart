@@ -2,8 +2,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/theme/app_colors.dart';
 
-/// Figma "Frame 37" (433:822): red warning card, e.g.
-/// "Strawberry expiring soon / Find recipes to use them up".
+/// Figma "food-row" warning card (349:42): red card on Home, e.g.
+/// "1 item expiring soon / Find recipes to use them up".
 ///
 /// Reusable by Developer 1 on Home (PRD §3.2 / §3.6 banner).
 class ExpiringBanner extends StatelessWidget {
@@ -22,10 +22,10 @@ class ExpiringBanner extends StatelessWidget {
   /// `true` = pink card (Home banner); `false` = cream floating card.
   final bool tinted;
 
-  /// "Strawberry expiring soon" or "3 items expiring soon".
-  static String titleFor(List<String> names) => names.length == 1
-      ? '${names.first} expiring soon'
-      : '${names.length} items expiring soon';
+  /// "1 item expiring soon" / "3 items expiring soon" (PRD §3.2 counts the
+  /// ingredients instead of naming one).
+  static String titleFor(int count) =>
+      count == 1 ? '1 item expiring soon' : '$count items expiring soon';
 
   @override
   Widget build(BuildContext context) {
@@ -38,30 +38,41 @@ class ExpiringBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
+          padding: const EdgeInsets.fromLTRB(20, 17, 32, 17),
           child: Row(
             children: [
-              const Icon(Icons.warning_rounded, color: Colors.red, size: 32),
-              const SizedBox(width: 20),
+              Icon(
+                tinted ? Icons.warning_rounded : Icons.warning_amber_rounded,
+                color: AppColors.danger,
+                size: 30,
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
+                        height: 1.2,
                         color: AppColors.danger,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     Text(
                       subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textLabel,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],

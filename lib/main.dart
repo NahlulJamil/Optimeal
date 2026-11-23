@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'core/connectivity/connectivity_watcher.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_bottom_nav.dart';
@@ -12,10 +13,12 @@ import 'core/widgets/app_widgets.dart';
 import 'features/auth/application/auth_providers.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/verify_email_screen.dart';
+import 'features/home/presentation/home_screen.dart';
 import 'features/notification/application/notification_providers.dart';
 import 'features/notification/domain/notification_planner.dart';
 import 'features/pantry/presentation/food_detail_screen.dart';
 import 'features/pantry/presentation/pantry_screen.dart';
+import 'features/recipes/presentation/recipe_detail_screen.dart';
 import 'features/recipes/presentation/recipes_screen.dart';
 import 'features/scanner/presentation/scanner_screen.dart';
 import 'firebase_options.dart';
@@ -41,7 +44,7 @@ class OptimealApp extends StatelessWidget {
         value: SystemUiOverlayStyle.dark,
         child: child!,
       ),
-      home: const AuthGate(),
+      home: const ConnectivityWatcher(child: AuthGate()),
     );
   }
 }
@@ -74,7 +77,7 @@ class AuthGate extends ConsumerWidget {
         if (!user.emailVerified) {
           return VerifyEmailScreen(email: user.email ?? '');
         }
-        return const DevShell();
+        return const AppShell();
       },
     );
   }
@@ -101,21 +104,22 @@ class _AuthSplash extends StatelessWidget {
   }
 }
 
-/// Temporary navigation shell so Developer 2's features can run on their own.
+/// Navigation shell for the signed-in app: Home, Pantry, Add, Recipes and
+/// Profile, with the bottom bar from Figma (PRD §3.2). Each tab keeps its own
+/// navigator so the bar stays visible on pushed screens, as in Figma.
 ///
-/// Routing (go_router), Home, Recipes, Profile, auth and the global theme are
-/// owned by Developers 1 and 3 (DevelopmentPlan.md); replace this shell when
-/// their work lands. Each tab keeps its own navigator so the bottom bar stays
-/// visible on pushed screens, as in Figma.
-class DevShell extends ConsumerStatefulWidget {
-  const DevShell({super.key});
+/// Home is Developer 1's screen; Pantry and Recipe Finder come from Developers
+/// 2 and 3. The Profile tab is still the temporary placeholder.
+class AppShell extends ConsumerStatefulWidget {
+  const AppShell({super.key});
 
   @override
-  ConsumerState<DevShell> createState() => _DevShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _DevShellState extends ConsumerState<DevShell> {
-  AppTab _tab = AppTab.pantry;
+class _AppShellState extends ConsumerState<AppShell> {
+  AppTab _tab = AppTab.home;
+  final _homeNavigator = GlobalKey<NavigatorState>();
   final _pantryNavigator = GlobalKey<NavigatorState>();
   final _recipesNavigator = GlobalKey<NavigatorState>();
   StreamSubscription<String>? _taps;
@@ -162,6 +166,14 @@ class _DevShellState extends ConsumerState<DevShell> {
     openScanner(context);
   }
 
+  /// Pushes a detail screen inside the Home tab so the bottom bar stays
+  /// visible, matching the Figma flow.
+  void _pushOnHome(WidgetBuilder builder) {
+    _homeNavigator.currentState?.push(
+      MaterialPageRoute<void>(builder: builder),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Keeps local reminders in sync with the pantry and preferences.
@@ -169,11 +181,25 @@ class _DevShellState extends ConsumerState<DevShell> {
     return Scaffold(
       body: IndexedStack(
         index: switch (_tab) {
-          AppTab.pantry => 0,
-          AppTab.recipes => 1,
-          _ => 2,
+          AppTab.home => 0,
+          AppTab.pantry => 1,
+          AppTab.recipes => 2,
+          AppTab.profile => 3,
         },
         children: [
+          Navigator(
+            key: _homeNavigator,
+            onGenerateRoute: (_) => MaterialPageRoute<void>(
+              builder: (_) => HomeScreen(
+                onOpenPantry: () => setState(() => _tab = AppTab.pantry),
+                onOpenRecipes: () => setState(() => _tab = AppTab.recipes),
+                onOpenFood: (foodId) =>
+                    _pushOnHome((_) => FoodDetailScreen(foodId: foodId)),
+                onOpenRecipe: (recipeId) =>
+                    _pushOnHome((_) => RecipeDetailScreen(recipeId: recipeId)),
+              ),
+            ),
+          ),
           Navigator(
             key: _pantryNavigator,
             onGenerateRoute: (_) => MaterialPageRoute<void>(
@@ -190,7 +216,7 @@ class _DevShellState extends ConsumerState<DevShell> {
               ),
             ),
           ),
-          _OwnedElsewhere(tab: _tab),
+          const _OwnedElsewhere(tab: AppTab.profile),
         ],
       ),
       bottomNavigationBar: AppBottomNav(

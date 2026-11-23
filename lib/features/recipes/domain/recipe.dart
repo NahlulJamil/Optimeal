@@ -187,6 +187,145 @@ class FavoriteRecipe {
   }
 }
 
+/// Unit tokens that only state how much of an ingredient is used, never its
+/// name ("150 g pasta" → "Pasta").
+const _ingredientUnits = {
+  'g',
+  'gr',
+  'gram',
+  'grams',
+  'kg',
+  'ml',
+  'l',
+  'liter',
+  'liters',
+  'litre',
+  'litres',
+  'tbsp',
+  'tsp',
+  'cup',
+  'cups',
+  'pcs',
+  'pc',
+  'piece',
+  'pieces',
+  'clove',
+  'cloves',
+  'slice',
+  'slices',
+  'pinch',
+  'pinches',
+  'handful',
+  'handfuls',
+  'punnet',
+  'punnets',
+  'carton',
+  'cartons',
+  'bunch',
+  'bunches',
+  'can',
+  'cans',
+  'jar',
+  'jars',
+  'pack',
+  'packs',
+  'packet',
+  'packets',
+  'stalk',
+  'stalks',
+  'sprig',
+  'sprigs',
+  'head',
+  'heads',
+  'oz',
+  'lb',
+};
+
+/// Adjectives that describe the state of an ingredient rather than its name.
+const _ingredientQualifiers = {
+  'fresh',
+  'dried',
+  'frozen',
+  'canned',
+  'cooked',
+  'raw',
+  'chopped',
+  'minced',
+  'sliced',
+  'diced',
+  'grated',
+  'shredded',
+  'ground',
+  'whole',
+  'large',
+  'small',
+  'medium',
+  'ripe',
+  'boneless',
+  'skinless',
+  'plain',
+  'mixed',
+  'toasted',
+  'boiled',
+  'peeled',
+  'crushed',
+  'halved',
+  'trimmed',
+  'optional',
+};
+
+final _quantityToken = RegExp(r'^\d+(?:[.,/-]\d+)?$');
+final _quantityWithUnit = RegExp(r'^(\d+(?:[.,/-]\d+)?)([a-zA-Z]+)$');
+
+/// Short label for a recipe ingredient tag, e.g. "100 g fresh spinach" →
+/// "Spinach" and "1 carton whole milk" → "Milk".
+///
+/// The AI returns the amount inside the ingredient string, but the Home card
+/// only has room for the ingredient name (Figma 349:28). Returns an empty
+/// string when nothing is left after the amount is removed.
+String ingredientTagLabel(String ingredient) {
+  final tokens = [
+    for (final word in ingredient.trim().split(RegExp(r'\s+')))
+      if (word.isNotEmpty) word.replaceAll(RegExp(r'[,;.]+$'), ''),
+  ]..removeWhere((word) => word.isEmpty);
+  if (tokens.isEmpty) return '';
+
+  var start = 0;
+  final first = tokens.first;
+  if (_quantityToken.hasMatch(first)) {
+    start = 1;
+    if (start < tokens.length &&
+        _ingredientUnits.contains(tokens[start].toLowerCase())) {
+      start++;
+    }
+  } else {
+    final attached = _quantityWithUnit.firstMatch(first);
+    if (attached != null &&
+        _ingredientUnits.contains(attached.group(2)!.toLowerCase())) {
+      start = 1;
+    }
+  }
+
+  var words = tokens.sublist(start);
+  // "Salt, to taste" → "Salt": drop the trailing serving note.
+  final toTaste = words.indexWhere((word) => word.toLowerCase() == 'to');
+  if (toTaste > 0) words = words.sublist(0, toTaste);
+  while (words.length > 1 &&
+      _ingredientQualifiers.contains(words.first.toLowerCase())) {
+    words = words.sublist(1);
+  }
+  while (words.length > 1 &&
+      _ingredientQualifiers.contains(words.last.toLowerCase())) {
+    words = words.sublist(0, words.length - 1);
+  }
+  if (words.isEmpty) return '';
+
+  return words
+      .take(2)
+      .map((word) => word[0].toUpperCase() + word.substring(1))
+      .join(' ');
+}
+
 /// Cuisines offered by the filter (PRD §3.5). Cuisine describes the regional
 /// style of a dish; cooking techniques are a separate field.
 const List<String> recipeCuisines = [
