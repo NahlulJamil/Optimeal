@@ -297,6 +297,8 @@ Sebuah fitur dianggap selesai apabila:
 |---|---|
 | Buka aplikasi tanpa koneksi, sesi masih aktif | Masuk ke Home, banner "Mode Offline" tampil. |
 | Buka Pantry saat offline | Daftar & detail tampil dari cache, foto lokal tetap muncul. Baris status menampilkan `Offline · Last synced …`. |
+| Buka Pantry offline dengan cache kosong | Empty state (bukan layar error) + baris status `Offline · No cached data yet`. |
+| Koneksi pulih saat Pantry terbuka | Daftar dibaca ulang dari server otomatis dan baris status kembali `Synced …`. |
 | Buka Pantry saat online | Baris status menampilkan `Synced …` dengan waktu sinkronisasi terakhir yang tetap tersimpan setelah aplikasi ditutup. |
 | Sinkronisasi gagal saat online | Baris status menampilkan `Could not sync · …`, aplikasi tetap dapat dipakai. |
 | Tekan tombol Scan saat offline | Tombol nonaktif + pesan bahwa scan butuh internet. |

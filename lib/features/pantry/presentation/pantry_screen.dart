@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/models/food_item.dart';
+import '../../../core/connectivity/sync_status.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/sync_status_line.dart';
@@ -68,15 +69,7 @@ class PantryScreen extends ConsumerWidget {
             Expanded(
               child: items.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => StateMessage(
-                  icon: Icons.error_outline,
-                  title: 'Could not load your pantry',
-                  message: 'Please try again.',
-                  action: OutlinedButton(
-                    onPressed: () => ref.invalidate(pantryControllerProvider),
-                    child: const Text('Try again'),
-                  ),
-                ),
+                error: (e, _) => _errorState(ref),
                 data: (list) {
                   if (list.isEmpty) {
                     return StateMessage(
@@ -85,7 +78,10 @@ class PantryScreen extends ConsumerWidget {
                           ? 'No food in ${filter.location.label} yet'
                           : 'No food matches "${filter.query}"',
                       message: filter.query.isEmpty
-                          ? 'Scan or add food to start tracking it.'
+                          ? (ref.watch(syncStatusProvider).phase ==
+                                    SyncPhase.offline
+                                ? 'Adding food needs an internet connection.'
+                                : 'Scan or add food to start tracking it.')
                           : null,
                     );
                   }
@@ -108,6 +104,26 @@ class PantryScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Offline failures read as "no connection" instead of a broken app
+  /// (PRD §7.4: a sync failure is a status, not a blocking error).
+  Widget _errorState(WidgetRef ref) {
+    final offline =
+        ref.watch(syncStatusProvider).phase == SyncPhase.offline;
+    return StateMessage(
+      icon: offline ? Icons.cloud_off_outlined : Icons.error_outline,
+      title: offline
+          ? 'Pantry is unavailable offline'
+          : 'Could not load your pantry',
+      message: offline
+          ? 'Reconnect to load your ingredients.'
+          : 'Please try again.',
+      action: OutlinedButton(
+        onPressed: () => ref.invalidate(pantryControllerProvider),
+        child: const Text('Try again'),
       ),
     );
   }

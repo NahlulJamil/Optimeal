@@ -987,6 +987,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 1. **Baris status sinkronisasi ditambahkan di bawah chip lokasi pada Pantry.** Bagian 7.5 mewajibkan aplikasi menampilkan waktu sinkronisasi terakhir, tetapi frame Pantry di Figma tidak menyediakan slot untuk itu. Baris ini memakai satu baris teks 12 px dengan ikon kecil dan token warna yang sudah ada (`#005B33` untuk tersinkron, `#F2994A` untuk offline, `#B83B32` untuk gagal), serta menampilkan salah satu dari empat status: `Synced …`, `Syncing…`, `Offline · Last synced …`, atau `Could not sync · …`.
 2. **Status sinkronisasi bersifat per perangkat.** Waktu sinkronisasi terakhir disimpan di penyimpanan lokal (`sync.lastSyncedAt`) agar tetap terbaca setelah aplikasi ditutup, dan wajib dihapus saat logout bersama data lokal lain.
 3. **Kegagalan sinkronisasi tidak menghentikan aplikasi** (Bagian 7.4): status gagal tampil sebagai baris informasi, bukan layar error.
+4. **Kesegaran data ditentukan oleh metadata Firestore** (`isFromCache`), bukan oleh deteksi konektivitas perangkat. Pembacaan yang dilayani cache selalu dilaporkan sebagai offline, sehingga waktu "sinkronisasi terakhir" tidak pernah menyesatkan. Saat offline, Pantry membaca cache perangkat secara langsung agar tidak menunggu server yang tidak dapat menjawab.
 
 ## 12.2 Keputusan yang Diambil
 

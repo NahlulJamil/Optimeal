@@ -8,8 +8,9 @@ import 'pantry_repository.dart';
 /// (PRD §6.6, Contracts §3.1). Dates are Firestore `Timestamp`s.
 ///
 /// Reads use Firestore's offline persistence, so the list still loads from
-/// the device cache when offline (PRD §2.4); writes are disabled in the UI
-/// while offline.
+/// the device cache when offline (PRD §7.5): [fetchAll] with `fromCache` reads
+/// the local copy only, and a normal read falls back to it when the server is
+/// unreachable. Writes are disabled in the UI while offline.
 class FirestorePantryRepository implements PantryRepository {
   FirestorePantryRepository({
     required this.userId,
@@ -26,16 +27,33 @@ class FirestorePantryRepository implements PantryRepository {
       _db.collection('users').doc(userId).collection('pantry');
 
   @override
-  Future<List<FoodItem>> fetchAll() async {
-    final snapshot = await _pantry.get();
+  Future<PantryRead> fetchAll({bool fromCache = false}) async {
+    if (fromCache) return _read(Source.cache);
+    try {
+      return await _read(Source.serverAndCache);
+    } on FirebaseException catch (error) {
+      // The device is offline and the server read timed out; the cached copy
+      // is the only source left (PRD §7.5).
+      if (!_isOfflineError(error)) rethrow;
+      return _read(Source.cache);
+    }
+  }
+
+  Future<PantryRead> _read(Source source) async {
+    final snapshot = await _pantry.get(GetOptions(source: source));
     final items = <FoodItem>[];
     for (final doc in snapshot.docs) {
       final item = foodItemFromFirestore(doc.id, doc.data());
       // A malformed document must not hide the rest of the pantry.
       if (item != null) items.add(item);
     }
-    return items;
+    // `isFromCache` is Firestore's own answer, so the freshness line does not
+    // depend on the connectivity plugin's guess (PRD §7.5).
+    return PantryRead(items, fromCache: snapshot.metadata.isFromCache);
   }
+
+  static bool _isOfflineError(FirebaseException error) =>
+      error.code == 'unavailable' || error.code == 'deadline-exceeded';
 
   @override
   Future<FoodItem> add(FoodDraft draft) async {

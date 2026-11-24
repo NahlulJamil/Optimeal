@@ -32,12 +32,26 @@ class FoodDraft {
   final bool hasPhoto;
 }
 
+/// Result of a pantry read.
+///
+/// [fromCache] is false only when the data came from the Firestore server, so
+/// the UI can report real freshness instead of trusting the connectivity
+/// plugin (PRD §7.5).
+class PantryRead {
+  const PantryRead(this.items, {required this.fromCache});
+
+  final List<FoodItem> items;
+  final bool fromCache;
+}
+
 /// Source of truth for pantry data (DevelopmentPlan principle 6).
 ///
 /// Implementations: `FirestorePantryRepository` (`users/{uid}/pantry`) and
 /// [MockPantryRepository] (fixtures, `USE_MOCK`).
 abstract class PantryRepository {
-  Future<List<FoodItem>> fetchAll();
+  /// Reads the pantry. When [fromCache] is true the read must be served from
+  /// the device copy only, so it works without a connection (PRD §7.5).
+  Future<PantryRead> fetchAll({bool fromCache = false});
   Future<FoodItem> add(FoodDraft draft);
   Future<FoodItem> update(FoodItem item);
   Future<void> delete(String foodId);
@@ -73,9 +87,10 @@ class MockPantryRepository implements PantryRepository {
   }
 
   @override
-  Future<List<FoodItem>> fetchAll() async {
+  Future<PantryRead> fetchAll({bool fromCache = false}) async {
     await _ensureLoaded();
-    return List.unmodifiable(_items.values);
+    // Fixtures are the app's own data, never a stale server copy.
+    return PantryRead(List.unmodifiable(_items.values), fromCache: false);
   }
 
   @override
@@ -137,7 +152,8 @@ class SignedOutPantryRepository implements PantryRepository {
   const SignedOutPantryRepository();
 
   @override
-  Future<List<FoodItem>> fetchAll() async => const [];
+  Future<PantryRead> fetchAll({bool fromCache = false}) async =>
+      const PantryRead([], fromCache: false);
 
   @override
   Future<FoodItem> add(FoodDraft draft) => _signedOut();
