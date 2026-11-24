@@ -40,7 +40,7 @@ Tanggung jawab:
 - Profile & Settings.
 - Layer offline: cache lokal Firestore, snapshot Pantry, deteksi konektivitas, status sinkronisasi.
 - **Penyimpanan foto lokal**: direktori file, kompresi thumbnail, pemetaan `foodId → path`, pembersihan saat logout.
-- Navigasi, komponen UI bersama, tema (termasuk **Dark Mode**), lokalisasi **English/Indonesia**, dan bundling asset ilustrasi resep.
+- Navigasi, komponen UI bersama, bundling asset ilustrasi resep. Tema tetap terang (Light Mode) dan bahasa antarmuka hanya English; tidak ada pengaturan tema atau bahasa.
 - Integrasi modul dan pengujian aplikasi secara keseluruhan.
 
 Catatan: kepemilikan Worker, Security Rules, dan asset ilustrasi **wajib** ada di satu orang agar tidak menjadi pekerjaan yang tidak bertuan.
@@ -300,7 +300,7 @@ Sebuah fitur dianggap selesai apabila:
 | Tekan tombol Scan saat offline | Tombol nonaktif + pesan bahwa scan butuh internet. |
 | Pilih mode Barcode saat offline | Tombol nonaktif + pesan bahwa barcode butuh internet. |
 | Buka Edit food details saat offline | Tombol simpan nonaktif + pesan bahwa perubahan data butuh internet. |
-| Ubah Dark Mode / Language saat offline | Tetap berfungsi dan tersimpan lokal. |
+| Tema dan bahasa saat offline | Tidak berlaku — aplikasi hanya tema terang dan bahasa English. |
 | Tekan "Tambah Bahan" saat offline | Tombol nonaktif + pesan. |
 | Buka tab Favorit saat offline | Daftar favorit & detail resep tampil lengkap dengan ilustrasi lokal. |
 | Generate resep saat offline | Tombol nonaktif + pesan. |

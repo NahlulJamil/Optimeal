@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.10
+**Versi:** 1.11
 
 **Platform:** Mobile Application (Android)
 
@@ -10,9 +10,9 @@
 
 **Framework:** Flutter
 
-**Terakhir diperbarui:** 20 November 2026
+**Terakhir diperbarui:** 23 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -64,9 +64,7 @@ Optimeal memiliki empat fitur utama:
 
 - Registrasi dan login pengguna.
 - Home / Dashboard.
-- Profile dan pengaturan akun dengan menu: **Profile Details**, **Password**, **Notifications**, **Dark Mode**, **Support**, **About**, dan **Language**.
-- **Dark Mode:** mengubah tema aplikasi antara terang dan gelap.
-- **Language:** memilih bahasa antarmuka (default **English**, tersedia **Indonesia**).
+- Profile dan pengaturan akun dengan menu: **Profile Details**, **Password**, **Notifications**, **Support**, **About**, dan **Logout**.
 - **Resep Favorit:** Menyimpan resep pilihan pengguna agar dapat dibuka kembali, termasuk dalam kondisi offline.
 - Logout.
 
@@ -87,7 +85,7 @@ Optimeal memiliki empat fitur utama:
 13. Resep favorit disimpan sebagai salinan lengkap (snapshot) agar dapat dibaca saat offline.
 14. Gambar resep menggunakan ilustrasi statis yang dibundel di dalam aplikasi, bukan gambar yang dihasilkan AI dan bukan URL dari internet.
 15. Food Scanner memiliki dua mode: **Scan Food** (kamera/galeri) dan **Barcode** (barcode kemasan produk). Keduanya memerlukan koneksi internet.
-16. Bahasa antarmuka bawaan adalah **English**, dengan opsi **Indonesia** pada menu Language.
+16. Aplikasi hanya memakai **tema terang (Light Mode)** dan antarmuka hanya berbahasa **English**. Tidak ada pengaturan tema atau bahasa di dalam aplikasi.
 17. **Desain UI mengikuti file Figma "Balomba"** (page *HiFi Optimeal*) sebagai acuan visual tunggal, sesuai Bagian 13.2 butir 2. File Figma bersifat **hanya-baca** dan tidak boleh diubah oleh AI (Bagian 13.2 butir 4).
 
 ## 2.4 Mode Operasi (Online & Offline)
@@ -103,7 +101,6 @@ Optimeal mendukung dua mode operasi. Perilaku tiap fitur dibedakan secara ekspli
 | Food Scanner — Barcode (pemindaian barcode kemasan) | ✅ | ❌ |
 | Menambah bahan makanan secara manual | ✅ | ❌ |
 | Mengubah detail bahan makanan (nama, kategori, lokasi, jumlah, tanggal, estimasi) | ✅ | ❌ |
-| Mengubah Dark Mode & Language | ✅ | ✅ (tersimpan lokal) |
 | Menghapus bahan makanan | ✅ | ❌ |
 | Generate rekomendasi resep | ✅ | ❌ |
 | Melihat resep favorit | ✅ | ✅ (snapshot lokal) |
@@ -410,13 +407,11 @@ Profile digunakan untuk mengelola informasi dan preferensi akun pengguna.
   - **Profile Details** — melihat dan mengubah nama/informasi profil.
   - **Password** — mengubah kata sandi akun.
   - **Notifications** — mengatur notifikasi (aktif/nonaktif dan ambang hari).
-  - **Dark Mode** — mengaktifkan/menonaktifkan tema gelap.
   - **Support** — halaman bantuan/kontak dukungan.
   - **About** — informasi aplikasi dan versi.
-  - **Language** — memilih bahasa antarmuka.
 - Pengguna dapat melakukan logout melalui tombol **Logout** di bagian bawah halaman.
 - Perubahan profil, kata sandi, dan preferensi notifikasi memerlukan koneksi internet.
-- Perubahan **Dark Mode** dan **Language** disimpan lokal dan dapat dilakukan saat offline.
+- Tema aplikasi tetap **terang** dan bahasa antarmuka tetap **English**; tidak ada menu Dark Mode atau Language.
 
 **Catatan penempatan Resep Favorit:** akses Resep Favorit ditempatkan di halaman **Recipe Finder**, bukan di Profile. Alasannya dijelaskan pada Bagian 12.
 
@@ -444,31 +439,6 @@ Fitur pendukung yang memungkinkan pengguna menyimpan resep pilihan dan membukany
 **Output:**
 
 Pengguna memiliki daftar resep andalan yang dapat diakses cepat dan tetap tersedia saat offline.
-
-## 3.9 Appearance & Language
-
-**Deskripsi:**
-
-Fitur pendukung untuk menyesuaikan tampilan dan bahasa aplikasi. Keduanya diakses dari halaman Profile.
-
-**Kebutuhan fungsional:**
-
-- Pengguna dapat mengaktifkan atau menonaktifkan **Dark Mode** melalui toggle pada halaman Profile.
-- Perubahan tema langsung diterapkan ke seluruh aplikasi tanpa perlu restart.
-- Pilihan tema disimpan di penyimpanan lokal dan tetap berlaku setelah aplikasi dibuka kembali.
-- Pengguna dapat memilih **Language** pada halaman Language: **English** (default) dan **Indonesia**.
-- Perubahan bahasa diterapkan ke seluruh teks antarmuka, format tanggal, dan format angka.
-- Pilihan bahasa disimpan lokal dan disinkronkan ke profil pengguna saat online.
-- Dark Mode dan Language **tetap dapat diubah saat offline**.
-
-**Ketentuan copywriting:**
-
-- Istilah baku tetap dipertahankan maknanya pada kedua bahasa. Untuk notifikasi, versi English tidak boleh memakai kata "spoiled"/"rotten"; gunakan "approaching shelf-life estimate" atau "±N days left", konsisten dengan 3.6.
-- Label lokasi penyimpanan tetap **Pantry / Fridge / Freezer** pada kedua bahasa (tidak diterjemahkan).
-
-**Output:**
-
-Pengguna dapat memakai aplikasi dengan tema dan bahasa yang diinginkan.
 
 ---
 
@@ -683,8 +653,6 @@ Informasi yang disimpan:
 - Email.
 - Password authentication (dikelola oleh Firebase Authentication).
 - Preferensi notifikasi (aktif/nonaktif, ambang hari).
-- Preferensi tema (`light` / `dark`).
-- Preferensi bahasa (`en` / `id`).
 - Waktu pembuatan dan pembaruan akun.
 
 ## 6.2 Food Inventory Data
@@ -776,7 +744,6 @@ foodPhotos/{foodId}        → path file foto bahan makanan
 pantrySnapshot             → salinan daftar bahan untuk mode offline
 favoriteSnapshots          → salinan lengkap resep favorit
 notificationSchedule       → metadata notifikasi yang dijadwalkan
-appPreferences             → preferensi tema (light/dark) & bahasa (en/id)
 ```
 
 Data lokal dihapus saat pengguna logout agar tidak tercampur antar akun pada perangkat yang sama.
@@ -811,8 +778,8 @@ Data lokal dihapus saat pengguna logout agar tidak tercampur antar akun pada per
 - Status online/offline selalu terlihat jelas.
 - Tombol yang tidak tersedia saat offline dinonaktifkan disertai keterangan, bukan hilang tanpa penjelasan.
 - Hasil AI selalu ditandai sebagai estimasi/rekomendasi.
-- Tema terang dan gelap sama-sama memenuhi kontras keterbacaan.
-- Teks antarmuka tersedia dalam English dan Indonesia tanpa merusak layout.
+- Tema terang memenuhi kontras keterbacaan.
+- Seluruh teks antarmuka berbahasa Inggris dan konsisten, termasuk format tanggal dan angka.
 
 ## 7.4 Reliability
 
@@ -860,9 +827,8 @@ Aplikasi dapat dinyatakan memenuhi kebutuhan dasar apabila:
 20. Data pengguna dan inventaris tersimpan sesuai akun masing-masing dan tidak dapat diakses pengguna lain.
 21. Seluruh layanan yang digunakan berjalan pada free tier tanpa billing account dan tanpa kartu kredit/rekening.
 22. Barcode yang tidak dikenali menampilkan pesan dan opsi scan ulang, beralih ke Scan Food, atau isi manual.
-23. Dark Mode dapat diaktifkan/dinonaktifkan, langsung berlaku, dan tetap tersimpan setelah aplikasi dibuka kembali.
-24. Pengguna dapat mengganti bahasa antarmuka antara English dan Indonesia, dan pilihannya tersimpan.
-25. Pengguna dapat menghapus resep; resep yang dihapus hilang dari cache dan daftar favorit.
+23. Pengguna dapat menghapus resep; resep yang dihapus hilang dari cache dan daftar favorit.
+24. Seluruh layar memakai tema terang dan teks berbahasa Inggris; tidak ada pengaturan tema atau bahasa.
 
 ---
 
@@ -1009,6 +975,13 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 3. **Tipografi ditetapkan:** **Inter** untuk seluruh teks UI dan **Lora** untuk wordmark "Optimeal", dibundel di `assets/fonts/` agar tetap tampil offline. Token warna disamakan dengan style Figma (`#FFFDF9`, `#1A1D1A`, `#656C66`, `#005B33`, `#EAE6DF`, `#B83B32`).
 4. **Gaya komponen auth disamakan dengan Figma:** input tinggi 54 radius 16 dengan ikon kiri, tombol utama pill 56 px, banner error `#FFF0ED`, dan navigation bar 72 px dengan tombol kembali bulat 40 px.
 
+### v1.10 → v1.11
+
+1. **Dark Mode dan Language dicabut dari lingkup produk.** Aplikasi hanya memakai **tema terang** dan antarmuka **English**. Menu Profile, matriks offline, preferensi pengguna, penyimpanan lokal, kriteria acceptance, dan keputusan desain disesuaikan. Ini mencabut butir 4, 5, dan 8 pada changelog v1.4 serta kriteria acceptance Dark Mode/Language.
+2. **Halaman Profile & Settings belum tersedia di Figma.** Struktur menu pada 3.7 tetap menjadi acuan sampai desain ditambahkan tim; AI tidak boleh mengarang tampilan Profile (Bagian 13.2 butir 2).
+3. **Perilaku Home yang tidak digambar di Figma ditetapkan:** ikon lonceng membuka bottom sheet berisi bahan yang mendekati batas estimasi, dan banner peringatan membuka Recipe Finder.
+4. **Tag bahan pada kartu resep Home memakai nama bahan**, bukan jumlah (mis. "Pasta", "Spinach"), agar label tidak terpotong.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -1024,7 +997,9 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Field editable | Semua detail teks (`name`, `category`, `storageLocation`, `quantity`, `unit`, `purchaseDate`, `shelfLifeDays`); foto terkunci | Mengikuti desain Edit food details; foto tetap terkunci agar tidak menambah beban penyimpanan dan tetap konsisten dengan arsitektur nol biaya. |
 | Batas cache resep | 10 resep/pengguna, TTL 7 hari | Menjaga kuota free tier AI tetap aman. |
 | Acuan desain | Figma "Balomba" page HiFi Optimeal | Satu sumber visual agar implementasi UI konsisten (Bagian 13.2). |
-| Bahasa UI | English (default) + Indonesia | Mengikuti desain Figma; Indonesia tetap tersedia untuk pengguna lokal. |
+| Tema & bahasa | Light Mode saja, English saja | Figma hanya menyediakan tampilan terang; satu bahasa menyederhanakan copy, pengujian, dan format tanggal/angka (v1.11). |
+| Ikon notifikasi Home | Membuka bottom sheet pengingat | Figma tidak menentukan tujuan ikon; sheet menampilkan bahan yang mendekati batas estimasi tanpa berpindah halaman. |
+| Banner Home | Membuka Recipe Finder | Mengikuti ajakan "Find recipes to use them up" pada banner. |
 | Mode Barcode | Scan barcode kemasan melalui proxy (`/analyze-barcode`) | Mempercepat input produk kemasan dan mengurangi kesalahan identifikasi manual. |
 | Kamera Scan Food | `camera` (v1.7) | Foto diambil di dalam aplikasi sesuai desain Scanner di Figma; gratis dan resmi dari tim Flutter. |
 | Pustaka barcode | `mobile_scanner` (v1.6) | Membaca barcode di perangkat secara gratis; nilai barcode dikirim ke proxy, bukan gambarnya. |
