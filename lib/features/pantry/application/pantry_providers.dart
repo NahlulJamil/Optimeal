@@ -61,19 +61,30 @@ class PantryController extends AsyncNotifier<List<FoodItem>> {
   ///
   /// Writes happen only after `fetchAll` resolves: Riverpod forbids mutating
   /// another provider while this provider is still building synchronously.
+  ///
+  /// While offline the list comes from the device cache only, so Pantry opens
+  /// read-only instead of waiting for a server that cannot answer (PRD §7.5).
+  /// The status follows Firestore's `isFromCache`, not the connectivity plugin,
+  /// so a cache read is never labelled as a fresh sync.
   Future<List<FoodItem>> _fetch() async {
     final online = ref.read(onlineStatusProvider);
     final sync = ref.read(syncStatusProvider.notifier);
     try {
-      final items = _sorted(await _repo.fetchAll());
-      if (online) {
+      final read = await _repo.fetchAll(fromCache: !online);
+      if (read.fromCache) {
+        sync.markOffline();
+      } else {
         sync.markSynced(DateTime.now());
+      }
+      return _sorted(read.items);
+    } on Object {
+      // A failed read while offline is still an offline state, not a server
+      // error: the screen explains the connection instead (PRD §7.4).
+      if (online) {
+        sync.markError();
       } else {
         sync.markOffline();
       }
-      return items;
-    } on Object {
-      sync.markError();
       rethrow;
     }
   }
