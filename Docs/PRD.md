@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.11
+**Versi:** 1.12
 
 **Platform:** Mobile Application (Android)
 
@@ -10,9 +10,9 @@
 
 **Framework:** Flutter
 
-**Terakhir diperbarui:** 23 November 2026
+**Terakhir diperbarui:** 24 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -982,6 +982,12 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 3. **Perilaku Home yang tidak digambar di Figma ditetapkan:** ikon lonceng membuka bottom sheet berisi bahan yang mendekati batas estimasi, dan banner peringatan membuka Recipe Finder.
 4. **Tag bahan pada kartu resep Home memakai nama bahan**, bukan jumlah (mis. "Pasta", "Spinach"), agar label tidak terpotong.
 
+### v1.11 → v1.12
+
+1. **Baris status sinkronisasi ditambahkan di bawah chip lokasi pada Pantry.** Bagian 7.5 mewajibkan aplikasi menampilkan waktu sinkronisasi terakhir, tetapi frame Pantry di Figma tidak menyediakan slot untuk itu. Baris ini memakai satu baris teks 12 px dengan ikon kecil dan token warna yang sudah ada (`#005B33` untuk tersinkron, `#F2994A` untuk offline, `#B83B32` untuk gagal), serta menampilkan salah satu dari empat status: `Synced …`, `Syncing…`, `Offline · Last synced …`, atau `Could not sync · …`.
+2. **Status sinkronisasi bersifat per perangkat.** Waktu sinkronisasi terakhir disimpan di penyimpanan lokal (`sync.lastSyncedAt`) agar tetap terbaca setelah aplikasi ditutup, dan wajib dihapus saat logout bersama data lokal lain.
+3. **Kegagalan sinkronisasi tidak menghentikan aplikasi** (Bagian 7.4): status gagal tampil sebagai baris informasi, bukan layar error.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -1002,6 +1008,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Banner Home | Membuka Recipe Finder | Mengikuti ajakan "Find recipes to use them up" pada banner. |
 | Mode Barcode | Scan barcode kemasan melalui proxy (`/analyze-barcode`) | Mempercepat input produk kemasan dan mengurangi kesalahan identifikasi manual. |
 | Kamera Scan Food | `camera` (v1.7) | Foto diambil di dalam aplikasi sesuai desain Scanner di Figma; gratis dan resmi dari tim Flutter. |
+| Baris status sinkronisasi | Satu baris di bawah chip lokasi Pantry | Memenuhi kewajiban "waktu sinkronisasi terakhir" (Bagian 7.5) tanpa mengubah struktur frame Pantry di Figma; Figma belum menyediakan slotnya (v1.12). |
 | Pustaka barcode | `mobile_scanner` (v1.6) | Membaca barcode di perangkat secara gratis; nilai barcode dikirim ke proxy, bukan gambarnya. |
 | Nilai enum lokasi penyimpanan | `room_temperature` / `fridge` / `freezer`; label UI tetap **Pantry** / **Fridge** / **Freezer** | `room_temperature` mewakili penyimpanan suhu ruang secara eksplisit, sementara pengguna tetap melihat istilah "Pantry" yang familiar. |
 | Alur kerja Git AI | Satu fitur = satu branch dari `main` terbaru; push branch, merge ke `main`, lalu commit & push `main` | Tiga developer bekerja paralel; branch per fitur mencegah konflik dan menjaga `main` tetap bersih (Bagian 13.7). |
@@ -1023,6 +1030,8 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 8. **Mode Barcode membutuhkan endpoint baru** `POST /analyze-barcode`. Strategi identifikasi produk (lookup katalog vs prompt model) ditentukan Developer 1 pada Tahap 0/1.
 9. **Status bar pada desain bergaya iOS**, sedangkan target platform adalah Android. Komponen status bar akan diganti status bar sistem Android saat implementasi.
 10. **Aksi hapus resep** menghapus data dari cache dan favorit; perlu dialog konfirmasi agar tidak menghapus favorit pengguna secara tidak sengaja.
+11. **Baris status sinkronisasi belum ada di Figma.** Frame Pantry tidak memiliki slot untuk waktu sinkronisasi terakhir yang diwajibkan Bagian 7.5. Penempatan saat ini (di bawah chip lokasi) adalah keputusan implementasi; tim perlu menambahkan elemen ini ke Figma atau menyetujui penempatannya secara resmi.
+12. **Logout belum diimplementasikan.** Saat alur Profile & Settings dibuat, logout wajib memanggil pembersihan data lokal: foto (`PhotoStore.clear`), favorit dan kuota resep (`LocalRecipeStore.clear`), serta waktu sinkronisasi terakhir (`SyncStatusController.clear`).
 
 ---
 

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:optimeal/core/connectivity/online_status.dart';
 import 'package:optimeal/features/pantry/application/pantry_providers.dart';
 import 'package:optimeal/features/pantry/presentation/pantry_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/fakes.dart';
 
@@ -63,5 +64,26 @@ void main() {
     final button = tester.widget<FilledButton>(find.byType(FilledButton));
     expect(button.onPressed, isNull);
     expect(find.text(offlineActionMessage), findsOneWidget);
+  });
+
+  testWidgets('shows the last sync status and switches to offline', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.runAsync(() async {
+      await tester.pumpWidget(_app());
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Synced'), findsOneWidget);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PantryScreen)),
+    );
+    container.read(onlineStatusProvider.notifier).set(false);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Offline · Last synced'), findsOneWidget);
   });
 }
