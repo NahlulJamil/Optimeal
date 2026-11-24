@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/connectivity/online_status.dart';
+import '../../../core/connectivity/sync_status.dart';
 import '../../../core/models/food_item.dart';
 import '../../auth/application/auth_providers.dart';
 import '../data/firestore_pantry_repository.dart';
@@ -30,8 +33,21 @@ class PantryController extends AsyncNotifier<List<FoodItem>> {
   PhotoStore get _photos => ref.read(photoStoreProvider);
 
   @override
-  Future<List<FoodItem>> build() async =>
-      _sorted(await ref.watch(pantryRepositoryProvider).fetchAll());
+  Future<List<FoodItem>> build() async {
+    // Rebuild when the account changes so one user's pantry never shows for
+    // another.
+    ref.watch(pantryRepositoryProvider);
+    // Refresh when the connection returns, and mark the cached list as offline
+    // as soon as the device loses its connection (PRD §7.5).
+    ref.listen(onlineStatusProvider, (previous, next) {
+      if (next) {
+        unawaited(_refresh());
+      } else {
+        ref.read(syncStatusProvider.notifier).markOffline();
+      }
+    });
+    return _fetch();
+  }
 
   static List<FoodItem> _sorted(Iterable<FoodItem> items) =>
       [...items]..sort((a, b) {
@@ -41,8 +57,41 @@ class PantryController extends AsyncNotifier<List<FoodItem>> {
             : a.name.toLowerCase().compareTo(b.name.toLowerCase());
       });
 
+  /// Reads the pantry and reports the result to [syncStatusProvider].
+  ///
+  /// Writes happen only after `fetchAll` resolves: Riverpod forbids mutating
+  /// another provider while this provider is still building synchronously.
+  Future<List<FoodItem>> _fetch() async {
+    final online = ref.read(onlineStatusProvider);
+    final sync = ref.read(syncStatusProvider.notifier);
+    try {
+      final items = _sorted(await _repo.fetchAll());
+      if (online) {
+        sync.markSynced(DateTime.now());
+      } else {
+        sync.markOffline();
+      }
+      return items;
+    } on Object {
+      sync.markError();
+      rethrow;
+    }
+  }
+
   Future<void> _reload() async {
-    state = AsyncData(_sorted(await _repo.fetchAll()));
+    ref.read(syncStatusProvider.notifier).markSyncing();
+    state = AsyncData(await _fetch());
+  }
+
+  /// Best-effort refresh used when connectivity returns. Failures are shown in
+  /// the list instead of being thrown into the connectivity listener.
+  Future<void> _refresh() async {
+    ref.read(syncStatusProvider.notifier).markSyncing();
+    try {
+      state = AsyncData(await _fetch());
+    } on Object catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+    }
   }
 
   /// Saves a new item, then its photo on the device.

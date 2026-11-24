@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/models/food_item.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
+import '../../../core/widgets/sync_status_line.dart';
 import '../application/pantry_providers.dart';
 import 'food_detail_screen.dart';
 import 'widgets/food_list_tile.dart';
@@ -55,6 +56,13 @@ class PantryScreen extends ConsumerWidget {
                           .setLocation(l),
                     ),
                 ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(24, 0, 24, 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SyncStatusLine(),
               ),
             ),
             Expanded(
