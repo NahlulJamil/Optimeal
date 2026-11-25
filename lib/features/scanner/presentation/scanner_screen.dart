@@ -15,6 +15,7 @@ import '../../pantry/presentation/food_form_entry.dart';
 import '../../pantry/presentation/food_form_screen.dart';
 import '../application/scanner_providers.dart';
 import '../data/ai_client.dart';
+import '../domain/barcode_value.dart';
 import 'food_camera.dart';
 import 'scan_line.dart';
 
@@ -53,6 +54,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       BarcodeFormat.upcA,
       BarcodeFormat.upcE,
       BarcodeFormat.code128,
+      BarcodeFormat.itf14,
+      // QR codes on packaging (GS1 Digital Link) carry the same product
+      // number; see productCodeFromScan.
+      BarcodeFormat.qrCode,
+      BarcodeFormat.dataMatrix,
     ],
   );
 
@@ -179,15 +185,26 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
 
   Future<void> _onBarcode(BarcodeCapture capture) async {
     if (_mode != ScanMode.barcode || _busy || !_online) return;
-    final value = capture.barcodes
+    final values = capture.barcodes
         .map((b) => b.rawValue)
         .whereType<String>()
-        .firstOrNull;
-    if (value == null) return;
+        .toList();
+    if (values.isEmpty) return;
+    final code = values.map(productCodeFromScan).nonNulls.firstOrNull;
+    if (code == null) {
+      // Same unreadable code keeps firing while it is in view; show the hint
+      // once instead of sending it to the server.
+      const hint =
+          'This code has no product number. Scan the barcode on the package, '
+          'or switch to Scan Food.';
+      if (_error != hint) _showError(hint);
+      return;
+    }
+    setState(() => _error = null);
     await _barcodeCam?.stop();
     await _analyze(() async {
-      final result = await ref.read(aiClientProvider).analyzeBarcode(value);
-      return entryFromAnalysis(result);
+      final result = await ref.read(aiClientProvider).analyzeBarcode(code);
+      return entryFromAnalysis(result, fromBarcode: true);
     });
   }
 
@@ -202,7 +219,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       if (e.code == AiErrorCode.notFound) {
         await _barcodeNotFound();
       } else {
-        _showError(aiErrorMessage(e));
+        _showError(aiErrorMessage(e, barcode: _mode == ScanMode.barcode));
       }
     } on FormatException catch (e) {
       _showError(e.message);
@@ -428,7 +445,7 @@ class _Viewfinder extends StatelessWidget {
     } else if (error != null) {
       message = error;
     } else if (mode == ScanMode.barcode) {
-      message = 'Point the camera at the product barcode.';
+      message = 'Point the camera at the product barcode or QR code.';
     }
 
     final food = foodCamera;
