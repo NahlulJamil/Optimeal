@@ -17,15 +17,29 @@ Widget _app({List overrides = const []}) => ProviderScope(
   child: const MaterialApp(home: PantryScreen()),
 );
 
+/// Pumps the screen and waits (in real time) until the fixture pantry has
+/// loaded. A fixed short delay was flaky on slower machines: the list was
+/// still loading, so its spinner kept `pumpAndSettle` from settling.
+Future<void> _pumpLoaded(WidgetTester tester) async {
+  await tester.runAsync(() async {
+    await tester.pumpWidget(_app());
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PantryScreen)),
+    );
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (!container.read(pantryControllerProvider).hasValue &&
+        DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    }
+  });
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('shows fridge items, switches chips and searches', (
     tester,
   ) async {
-    await tester.runAsync(() async {
-      await tester.pumpWidget(_app());
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-    });
-    await tester.pumpAndSettle();
+    await _pumpLoaded(tester);
 
     expect(find.text('Pantry'), findsWidgets);
     expect(find.text('Strawberries'), findsOneWidget);
@@ -45,11 +59,7 @@ void main() {
 
   testWidgets('detail screen disables editing while offline', (tester) async {
     late ProviderContainer container;
-    await tester.runAsync(() async {
-      await tester.pumpWidget(_app());
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-    });
-    await tester.pumpAndSettle();
+    await _pumpLoaded(tester);
     container = ProviderScope.containerOf(
       tester.element(find.byType(PantryScreen)),
     );
@@ -70,11 +80,7 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
-    await tester.runAsync(() async {
-      await tester.pumpWidget(_app());
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-    });
-    await tester.pumpAndSettle();
+    await _pumpLoaded(tester);
 
     expect(find.textContaining('Synced'), findsOneWidget);
 

@@ -77,9 +77,18 @@ Future<void> _pump(
 }) async {
   await tester.binding.setSurfaceSize(const Size(402, 874));
   addTearDown(() => tester.binding.setSurfaceSize(null));
+  // Wait in real time until the fixture pantry has loaded; a fixed short
+  // delay was flaky on slower machines (the spinner kept pumpAndSettle busy).
   await tester.runAsync(() async {
     await tester.pumpWidget(app);
-    await Future<void>.delayed(const Duration(milliseconds: 100));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomeScreen)),
+    );
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (!container.read(pantryControllerProvider).hasValue &&
+        DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    }
   });
   if (settle) {
     await tester.pumpAndSettle();

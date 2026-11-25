@@ -32,7 +32,17 @@ Widget _app() => ProviderScope(
 Future<void> _pumpApp(WidgetTester tester, {Widget? app}) async {
   await tester.runAsync(() async {
     await tester.pumpWidget(app ?? _app());
-    await Future<void>.delayed(const Duration(milliseconds: 100));
+    // Wait in real time for the pantry and the recipe data (fixture files,
+    // shared preferences); a fixed short delay was flaky on slow machines.
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(RecipesScreen)),
+    );
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while ((!container.read(pantryControllerProvider).hasValue ||
+            !container.read(recipesControllerProvider).hasValue) &&
+        DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    }
   });
   await tester.pumpAndSettle();
 }
