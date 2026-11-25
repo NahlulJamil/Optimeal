@@ -988,6 +988,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 2. **Status sinkronisasi bersifat per perangkat.** Waktu sinkronisasi terakhir disimpan di penyimpanan lokal (`sync.lastSyncedAt`) agar tetap terbaca setelah aplikasi ditutup, dan wajib dihapus saat logout bersama data lokal lain.
 3. **Kegagalan sinkronisasi tidak menghentikan aplikasi** (Bagian 7.4): status gagal tampil sebagai baris informasi, bukan layar error.
 4. **Kesegaran data ditentukan oleh metadata Firestore** (`isFromCache`), bukan oleh deteksi konektivitas perangkat. Pembacaan yang dilayani cache selalu dilaporkan sebagai offline, sehingga waktu "sinkronisasi terakhir" tidak pernah menyesatkan. Saat offline, Pantry membaca cache perangkat secara langsung agar tidak menunggu server yang tidak dapat menjawab.
+5. **Penulisan data tetap terkunci pada jaringan tanpa internet.** Tombol tambah/ubah/hapus memakai status kesegaran Firestore, bukan hanya status konektivitas, sehingga wifi yang tersambung tanpa akses internet tidak menampilkan tombol aktif yang berakhir gagal. Jika koneksi terputus tepat saat menyimpan, pesan yang tampil sama dengan pesan tombol nonaktif.
 
 ## 12.2 Keputusan yang Diambil
 

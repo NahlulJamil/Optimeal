@@ -306,9 +306,11 @@ Sebuah fitur dianggap selesai apabila:
 | Buka Edit food details saat offline | Tombol simpan nonaktif + pesan bahwa perubahan data butuh internet. |
 | Tema dan bahasa saat offline | Tidak berlaku — aplikasi hanya tema terang dan bahasa English. |
 | Tekan "Tambah Bahan" saat offline | Tombol nonaktif + pesan. |
+| Perangkat tersambung wifi tanpa internet | Tombol tambah/ubah/hapus tetap nonaktif + pesan offline (bukan error generik). |
 | Buka tab Favorit saat offline | Daftar favorit & detail resep tampil lengkap dengan ilustrasi lokal. |
 | Generate resep saat offline | Tombol nonaktif + pesan. |
 | Tunggu jadwal notifikasi saat offline | Notifikasi lokal muncul dan membuka detail bahan. |
+| Riwayat pengingat gagal disimpan saat offline | Notifikasi tetap terjadwal dari cache Pantry; riwayat Firestore disinkronkan saat online tanpa pesan error. |
 | Lebih dari 3 bahan jatuh tempo bersamaan | Muncul maksimal 3 notifikasi + 1 ringkasan. |
 | Koneksi kembali | Status sinkronisasi berubah, seluruh tombol aktif kembali. |
 

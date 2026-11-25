@@ -2,7 +2,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/connectivity/offline_error.dart';
 import '../../../core/connectivity/online_status.dart';
+import '../../../core/connectivity/sync_status.dart';
 import '../../../core/models/food_item.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -114,11 +116,13 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
       Navigator.of(context).popUntil((r) => r.isFirst);
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('${item.name} deleted')));
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = 'Could not delete. Please try again.';
+          _error = isOfflineError(error)
+              ? offlineActionMessage
+              : 'Could not delete. Please try again.';
         });
       }
     }
@@ -161,11 +165,15 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
           ),
         ),
       );
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = 'Could not save. Please try again.';
+          // A connection lost mid-save gets the same explanation as the
+          // disabled buttons instead of a generic retry (PRD §7.5).
+          _error = isOfflineError(error)
+              ? offlineActionMessage
+              : 'Could not save. Please try again.';
         });
       }
     }
@@ -173,7 +181,9 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final online = ref.watch(onlineStatusProvider);
+    // `writeBlockedProvider` also covers a network without internet, where a
+    // write would fail even though connectivity reports "connected".
+    final canWrite = !ref.watch(writeBlockedProvider);
     final topInset = MediaQuery.paddingOf(context).top;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -205,7 +215,7 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
                           _Thumbnails(
                             entries: _entries,
                             selected: _selected,
-                            removable: !widget.isEdit || online,
+                            removable: !widget.isEdit || canWrite,
                             onSelect: (i) => setState(() {
                               _selected = i;
                               _error = null;
@@ -216,7 +226,7 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
                           _FormCard(
                             key: ObjectKey(_current),
                             entry: _current,
-                            canRemove: !widget.isEdit || online,
+                            canRemove: !widget.isEdit || canWrite,
                             onRemove: () => _removeEntry(_selected),
                             onChanged: () => setState(() => _error = null),
                           ),
@@ -282,9 +292,9 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
                   PrimaryButton(
                     label: widget.isEdit ? 'Save' : 'Add Food',
                     busy: _saving,
-                    onPressed: online ? _save : null,
+                    onPressed: canWrite ? _save : null,
                   ),
-                  if (!online)
+                  if (!canWrite)
                     const ColoredBox(
                       color: AppColors.background,
                       child: OfflineHint(offlineActionMessage),
