@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../core/connectivity/offline_error.dart';
 import '../../../core/models/food_item.dart';
 import '../domain/shelf_life.dart';
 import 'pantry_repository.dart';
@@ -34,7 +35,7 @@ class FirestorePantryRepository implements PantryRepository {
     } on FirebaseException catch (error) {
       // The device is offline and the server read timed out; the cached copy
       // is the only source left (PRD §7.5).
-      if (!_isOfflineError(error)) rethrow;
+      if (!isOfflineError(error)) rethrow;
       return _read(Source.cache);
     }
   }
@@ -51,9 +52,6 @@ class FirestorePantryRepository implements PantryRepository {
     // depend on the connectivity plugin's guess (PRD §7.5).
     return PantryRead(items, fromCache: snapshot.metadata.isFromCache);
   }
-
-  static bool _isOfflineError(FirebaseException error) =>
-      error.code == 'unavailable' || error.code == 'deadline-exceeded';
 
   @override
   Future<FoodItem> add(FoodDraft draft) async {

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:optimeal/core/connectivity/online_status.dart';
 import 'package:optimeal/core/connectivity/sync_status.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -94,5 +95,26 @@ void main() {
     expect(container.read(syncStatusProvider).lastSyncedAt, isNull);
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString(SyncStatusController.lastSyncedKey), isNull);
+  });
+
+  test('blocks writes when offline or when data came from the cache', () {
+    SharedPreferences.setMockInitialValues({});
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    // Online with a server read: writes are allowed.
+    container.read(syncStatusProvider.notifier).markSynced(DateTime.utc(2026, 11, 25));
+    expect(container.read(writeBlockedProvider), isFalse);
+
+    // A cache read means Firestore is unreachable, even if wifi is connected.
+    container.read(syncStatusProvider.notifier).markOffline();
+    expect(container.read(writeBlockedProvider), isTrue);
+
+    container.read(syncStatusProvider.notifier).markSynced(DateTime.utc(2026, 11, 25));
+    expect(container.read(writeBlockedProvider), isFalse);
+
+    // No connection at all.
+    container.read(onlineStatusProvider.notifier).set(false);
+    expect(container.read(writeBlockedProvider), isTrue);
   });
 }

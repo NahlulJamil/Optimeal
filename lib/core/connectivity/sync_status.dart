@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'online_status.dart';
+
 /// Freshness of the local Pantry copy relative to Firestore (PRD §7.5).
 enum SyncPhase {
   /// The last read/write reached Firestore while online.
@@ -92,6 +94,17 @@ class SyncStatusController extends Notifier<SyncStatus> {
 final syncStatusProvider = NotifierProvider<SyncStatusController, SyncStatus>(
   SyncStatusController.new,
 );
+
+/// Whether writes should be blocked (PRD §7.5: no data changes offline).
+///
+/// Connectivity alone is not enough: a wifi network without internet reports
+/// "connected" while every Firestore call fails. When the last read came from
+/// the cache ([SyncPhase.offline]) the device cannot reach Firestore, so the
+/// write buttons must stay disabled with the offline explanation.
+final writeBlockedProvider = Provider<bool>((ref) {
+  if (!ref.watch(onlineStatusProvider)) return true;
+  return ref.watch(syncStatusProvider).phase == SyncPhase.offline;
+});
 
 /// "just now" / "5 min ago" / "2 h ago" / "3 d ago" for the sync line.
 String formatLastSynced(DateTime at, {DateTime? now}) {

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/connectivity/online_status.dart';
+import '../../../core/connectivity/sync_status.dart';
 import '../../../core/models/food_item.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -21,7 +22,9 @@ class FoodDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pantry = ref.watch(pantryControllerProvider);
     final item = ref.watch(foodItemProvider(foodId));
-    final online = ref.watch(onlineStatusProvider);
+    // Connectivity alone is not enough: `writeBlockedProvider` also catches a
+    // network without internet, where every Firestore write would fail.
+    final canWrite = !ref.watch(writeBlockedProvider);
 
     Widget body;
     if (pantry.isLoading && item == null) {
@@ -32,7 +35,7 @@ class FoodDetailScreen extends ConsumerWidget {
         title: 'This food is no longer in your pantry',
       );
     } else {
-      body = _DetailBody(item: item, online: online);
+      body = _DetailBody(item: item, canWrite: canWrite);
     }
 
     return Scaffold(
@@ -52,10 +55,10 @@ class FoodDetailScreen extends ConsumerWidget {
 }
 
 class _DetailBody extends ConsumerWidget {
-  const _DetailBody({required this.item, required this.online});
+  const _DetailBody({required this.item, required this.canWrite});
 
   final FoodItem item;
-  final bool online;
+  final bool canWrite;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -214,7 +217,7 @@ class _DetailBody extends ConsumerWidget {
         const SizedBox(height: 20),
         PrimaryButton(
           label: 'Edit food details',
-          onPressed: online
+          onPressed: canWrite
               ? () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => FoodFormScreen.edit(item: item),
@@ -222,7 +225,7 @@ class _DetailBody extends ConsumerWidget {
                 )
               : null,
         ),
-        if (!online) const OfflineHint(offlineActionMessage),
+        if (!canWrite) const OfflineHint(offlineActionMessage),
       ],
     );
   }

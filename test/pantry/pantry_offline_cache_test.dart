@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:optimeal/core/connectivity/online_status.dart';
+import 'package:optimeal/core/connectivity/sync_status.dart';
 import 'package:optimeal/core/models/food_item.dart';
+import 'package:optimeal/core/widgets/app_widgets.dart';
 import 'package:optimeal/features/pantry/application/pantry_providers.dart';
 import 'package:optimeal/features/pantry/data/pantry_repository.dart';
 import 'package:optimeal/features/pantry/presentation/pantry_screen.dart';
@@ -152,6 +154,34 @@ void main() {
     expect(find.text('Spinach'), findsOneWidget);
     expect(find.textContaining('Offline'), findsOneWidget);
     expect(find.textContaining('Synced'), findsNothing);
+  });
+
+  testWidgets('a network without internet keeps pantry edits disabled', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final repo = _RecordingPantryRepository(items: [_item('Spinach')]);
+    await tester.pumpWidget(_app(repo));
+    await _settle(tester);
+
+    // Connectivity says online, but the last read came from the cache, so
+    // Firestore is unreachable and writes must stay blocked.
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PantryScreen)),
+    );
+    container.read(syncStatusProvider.notifier).markOffline();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Spinach'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Detail Food'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Edit food details'), 200);
+    final button = tester.widget<PrimaryButton>(
+      find.widgetWithText(PrimaryButton, 'Edit food details'),
+    );
+    expect(button.onPressed, isNull);
+    expect(find.text(offlineActionMessage), findsOneWidget);
   });
 
   testWidgets('an unreadable cache while offline explains the connection', (
