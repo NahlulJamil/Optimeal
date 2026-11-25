@@ -4,6 +4,8 @@ export interface Env {
   GEMINI_API_KEY: string;
   FIREBASE_PROJECT_ID: string;
   GEMINI_MODEL: string;
+  /** Daftar model cadangan, dipisah koma (opsional). */
+  GEMINI_FALLBACK_MODELS?: string;
 }
 
 class ApiError extends Error {
@@ -415,61 +417,101 @@ async function geminiJson<T>(
   parts: unknown[],
   schema: unknown,
 ): Promise<T> {
-  let response: Response;
-  try {
-    response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": env.GEMINI_API_KEY,
-        },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts }],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json",
-            responseSchema: schema,
+  // Model utama lalu model cadangan. Free tier Gemini sering menjawab 503
+  // "high demand" atau 429 untuk satu model saja; model lain biasanya masih
+  // melayani. Semua percobaan tetap di bawah batas 55 detik.
+  const models = [
+    env.GEMINI_MODEL,
+    ...(env.GEMINI_FALLBACK_MODELS ?? "")
+      .split(",")
+      .map((m) => m.trim())
+      .filter(Boolean),
+  ].filter((m, i, all) => m && all.indexOf(m) === i);
+  const deadline = Date.now() + 55_000;
+  let sawRateLimit = false;
+  let sawTimeout = false;
+
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const remaining = deadline - Date.now();
+      if (remaining < 3_000) break;
+
+      let response: Response;
+      try {
+        response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": env.GEMINI_API_KEY,
+            },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts }],
+              generationConfig: {
+                temperature: 0.2,
+                responseMimeType: "application/json",
+                responseSchema: schema,
+              },
+            }),
+            signal: AbortSignal.timeout(remaining),
           },
-        }),
-        signal: AbortSignal.timeout(55_000),
-      },
-    );
-  } catch (error) {
-    if (error instanceof Error && error.name === "TimeoutError") {
-      throw new ApiError(504, "TIMEOUT", "AI request timed out");
+        );
+      } catch (error) {
+        if (error instanceof Error && error.name === "TimeoutError") {
+          sawTimeout = true;
+          break;
+        }
+        console.error("Gemini network error", model, String(error));
+        continue;
+      }
+
+      if (response.ok) {
+        const data = (await response.json()) as {
+          candidates?: Array<{
+            content?: { parts?: Array<{ text?: string }> };
+            finishReason?: string;
+          }>;
+        };
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) {
+          throw new ApiError(500, "AI_FAILURE", "AI returned an empty response");
+        }
+        try {
+          return JSON.parse(text) as T;
+        } catch {
+          throw new ApiError(500, "AI_FAILURE", "AI returned invalid JSON");
+        }
+      }
+
+      // Detail hanya masuk log Worker, tidak pernah dikirim ke client.
+      const detail = await response.text().catch(() => "");
+      console.error("Gemini failure", model, response.status, detail.slice(0, 300));
+
+      if (response.status === 429) {
+        sawRateLimit = true;
+        break; // kuota per model: langsung coba model berikutnya
+      }
+      if (response.status === 503 || response.status === 500) {
+        // Sibuk sementara: tunggu sebentar, coba sekali lagi, lalu pindah.
+        if (attempt === 0) await sleep(1_500);
+        continue;
+      }
+      break; // 400/403/404 (mis. nama model tidak ada): pindah model
     }
-    throw new ApiError(500, "AI_FAILURE", "AI request failed");
   }
 
-  if (response.status === 429) {
+  if (sawRateLimit) {
     throw new ApiError(429, "RATE_LIMITED", "AI quota reached");
   }
-  if (!response.ok) {
-    // Detail hanya masuk log Worker, tidak pernah dikirim ke client.
-    const detail = await response.text().catch(() => "");
-    console.error("Gemini failure", response.status, detail.slice(0, 500));
-    throw new ApiError(500, "AI_FAILURE", "AI request failed");
+  if (sawTimeout) {
+    throw new ApiError(504, "TIMEOUT", "AI request timed out");
   }
+  throw new ApiError(500, "AI_FAILURE", "AI is busy, please try again");
+}
 
-  const data = (await response.json()) as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-      finishReason?: string;
-    }>;
-  };
-
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new ApiError(500, "AI_FAILURE", "AI returned an empty response");
-  }
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new ApiError(500, "AI_FAILURE", "AI returned invalid JSON");
-  }
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ---------------------------------------------------------------------------

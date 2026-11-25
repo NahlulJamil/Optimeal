@@ -81,3 +81,7 @@ curl.exe -s -X POST http://127.0.0.1:8787/generate-recipes -H "Authorization: Be
   saat ini dicek di client sesuai `Contracts.md`. Kalau kuota Gemini habis,
   Worker mengembalikan `429 RATE_LIMITED`.
 - Timeout Gemini 55 detik → `504 TIMEOUT`.
+- Bila model utama sibuk (`503 high demand`) Worker menunggu 1,5 detik dan
+  mencoba sekali lagi, lalu pindah ke model di `vars.GEMINI_FALLBACK_MODELS`
+  (dipisah koma). `429` langsung pindah model; nama model yang tidak ada
+  (`404`) dilewati. Bila semua gagal → `500 AI_FAILURE` / `429` / `504`.

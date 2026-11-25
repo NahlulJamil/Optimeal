@@ -12,6 +12,8 @@
   },
   "vars": {
     "FIREBASE_PROJECT_ID": "optimeal-firebase",
-    "GEMINI_MODEL": "gemini-3.8-flash"
+    "GEMINI_MODEL": "gemini-3.8-flash",
+    // Dipakai bila model utama sibuk (503) atau kuotanya habis (429).
+    "GEMINI_FALLBACK_MODELS": "gemini-flash-latest,gemini-flash-lite-latest"
   }
 }
