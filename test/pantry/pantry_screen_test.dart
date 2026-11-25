@@ -92,4 +92,32 @@ void main() {
 
     expect(find.textContaining('Offline · Last synced'), findsOneWidget);
   });
+
+  testWidgets('filters the list by category', (tester) async {
+    await _pumpLoaded(tester);
+
+    final chips = find.byKey(const Key('pantry-category-chips'));
+    await tester.tap(find.descendant(of: chips, matching: find.text('Dairy')));
+    await tester.pumpAndSettle();
+    expect(find.text('Whole Milk'), findsOneWidget);
+    expect(find.text('Greek Yogurt'), findsOneWidget);
+    expect(find.text('Strawberries'), findsNothing);
+    expect(find.text('Baby Spinach'), findsNothing);
+
+    await tester.tap(find.descendant(of: chips, matching: find.text('Fruits')));
+    await tester.pumpAndSettle();
+    expect(find.text('Strawberries'), findsOneWidget);
+    expect(find.text('Whole Milk'), findsNothing);
+
+    await tester.tap(
+      find.descendant(of: chips, matching: find.text('Meat & Seafood')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('No Meat & Seafood in Fridge'), findsOneWidget);
+
+    await tester.tap(find.descendant(of: chips, matching: find.text('All')));
+    await tester.pumpAndSettle();
+    expect(find.text('Strawberries'), findsOneWidget);
+    expect(find.text('Whole Milk'), findsOneWidget);
+  });
 }

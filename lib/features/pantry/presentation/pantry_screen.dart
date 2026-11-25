@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/sync_status_line.dart';
 import '../application/pantry_providers.dart';
+import '../domain/shelf_life.dart';
 import 'food_detail_screen.dart';
 import 'widgets/food_list_tile.dart';
 
@@ -59,8 +60,33 @@ class PantryScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            // PRD §3.4: filter by category. Same chip style as the location
+            // chips, in one scrollable row (the Figma Pantry frame has no
+            // category control yet; team decision to add it here).
+            SizedBox(
+              height: 36,
+              child: ListView(
+                key: const Key('pantry-category-chips'),
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  for (final c in <String?>[null, ...foodCategories])
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _LocationChip(
+                        label: c ?? 'All',
+                        compact: true,
+                        selected: filter.category == c,
+                        onTap: () => ref
+                            .read(pantryFilterProvider.notifier)
+                            .setCategory(c),
+                      ),
+                    ),
+                ],
+              ),
+            ),
             const Padding(
-              padding: EdgeInsets.fromLTRB(24, 0, 24, 4),
+              padding: EdgeInsets.fromLTRB(24, 8, 24, 4),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: SyncStatusLine(),
@@ -72,12 +98,15 @@ class PantryScreen extends ConsumerWidget {
                 error: (e, _) => _errorState(ref),
                 data: (list) {
                   if (list.isEmpty) {
+                    final category = filter.category;
                     return StateMessage(
                       icon: Icons.kitchen_outlined,
-                      title: filter.query.isEmpty
-                          ? 'No food in ${filter.location.label} yet'
-                          : 'No food matches "${filter.query}"',
-                      message: filter.query.isEmpty
+                      title: filter.query.isNotEmpty
+                          ? 'No food matches "${filter.query}"'
+                          : category != null
+                          ? 'No $category in ${filter.location.label}'
+                          : 'No food in ${filter.location.label} yet',
+                      message: filter.query.isEmpty && category == null
                           ? (ref.watch(syncStatusProvider).phase ==
                                     SyncPhase.offline
                                 ? 'Adding food needs an internet connection.'
@@ -111,8 +140,7 @@ class PantryScreen extends ConsumerWidget {
   /// Offline failures read as "no connection" instead of a broken app
   /// (PRD §7.4: a sync failure is a status, not a blocking error).
   Widget _errorState(WidgetRef ref) {
-    final offline =
-        ref.watch(syncStatusProvider).phase == SyncPhase.offline;
+    final offline = ref.watch(syncStatusProvider).phase == SyncPhase.offline;
     return StateMessage(
       icon: offline ? Icons.cloud_off_outlined : Icons.error_outline,
       title: offline
@@ -165,11 +193,15 @@ class _LocationChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.compact = false,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+
+  /// Smaller variant used for the category row.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -187,11 +219,13 @@ class _LocationChip extends StatelessWidget {
           customBorder: const StadiumBorder(),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+            padding: compact
+                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
+                : const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: compact ? 12 : 14,
                 fontWeight: FontWeight.w600,
                 color: selected ? Colors.white : AppColors.textLabel,
               ),
