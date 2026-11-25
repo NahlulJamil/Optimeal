@@ -14,7 +14,7 @@ import '../data/pantry_repository.dart';
 import '../data/photo_store.dart';
 import '../domain/shelf_life.dart';
 
-/// Fixtures in mock mode (`USE_MOCK`, the default), otherwise the signed-in
+/// Fixtures in mock mode (`USE_MOCK=true`), otherwise the signed-in
 /// user's Firestore pantry. Rebuilt when the account changes, so one user's
 /// pantry never shows for another.
 final pantryRepositoryProvider = Provider<PantryRepository>((ref) {

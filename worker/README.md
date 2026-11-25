@@ -59,7 +59,14 @@ curl.exe -s -X POST http://127.0.0.1:8787/generate-recipes -H "Authorization: Be
 
 - **`/analyze-barcode`** memakai Open Food Facts (gratis, tanpa key) untuk
   lookup produk, lalu Gemini hanya mengklasifikasikan kategori dan estimasi
-  masa simpan. Kalau produk tidak ada → `404 NOT_FOUND`.
+  masa simpan. Kalau produk tidak ada → `404 NOT_FOUND`; kalau Open Food
+  Facts tidak bisa dihubungi → `500 AI_FAILURE` (client boleh retry).
+  `brand`/`packageSize` bernilai `null` bila kosong (Contracts §4.3).
+- **`/generate-recipes`**: `recipeId` selalu dibuat Worker (`r_<uuid>`),
+  bukan oleh AI, supaya unik antar-generate dan aman sebagai ID dokumen
+  Firestore. Resep yang field wajibnya tidak lengkap dibuang; input dibatasi
+  60 bahan (nama ≤ 80 karakter). `excludeRecipeIds` tetap diterima sesuai
+  kontrak, tetapi tidak dipakai lagi karena ID kini selalu baru.
 - **`/analyze-food`** memakai Gemini vision dengan `responseSchema`, jadi
   output selalu JSON sesuai kontrak.
 - Rate limit per pengguna (10/jam, 30/hari) belum diterapkan di Worker; untuk
