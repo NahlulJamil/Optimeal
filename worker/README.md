@@ -62,6 +62,14 @@ curl.exe -s -X POST http://127.0.0.1:8787/generate-recipes -H "Authorization: Be
   masa simpan. Kalau produk tidak ada → `404 NOT_FOUND`; kalau Open Food
   Facts tidak bisa dihubungi → `500 AI_FAILURE` (client boleh retry).
   `brand`/`packageSize` bernilai `null` bila kosong (Contracts §4.3).
+  Nama produk diambil dari katalog (`product_name`, lalu `product_name_id`,
+  `product_name_en`, `generic_name`, …) sesuai yang tertulis di kemasan.
+  Bila Gemini gagal (kuota/timeout), Worker tetap mengembalikan nama, merek,
+  ukuran, dan kategori tebakan dari katalog dengan `shelfLifeDays: null`;
+  aplikasi lalu memakai katalog cadangan masa simpan (Contracts §6.2).
+  Kategori memakai daftar kategori aplikasi (`Vegetables` … `Others`).
+- Aplikasi juga membaca **QR code** kemasan (GS1 Digital Link,
+  `…/01/<GTIN>`) dan mengirim GTIN-nya ke endpoint ini.
 - **`/generate-recipes`**: `recipeId` selalu dibuat Worker (`r_<uuid>`),
   bukan oleh AI, supaya unik antar-generate dan aman sebagai ID dokumen
   Firestore. Resep yang field wajibnya tidak lengkap dibuang; input dibatasi

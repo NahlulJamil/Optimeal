@@ -53,6 +53,17 @@ String normalizeCategory(String raw) {
     'spice': 'Condiments & Spices',
     'spices': 'Condiments & Spices',
     'bumbu': 'Condiments & Spices',
+    'sauce': 'Condiments & Spices',
+    'seasoning': 'Condiments & Spices',
+    'noodle': 'Grains & Cereals',
+    'noodles': 'Grains & Cereals',
+    'rice': 'Grains & Cereals',
+    'bread': 'Grains & Cereals',
+    'pasta': 'Grains & Cereals',
+    'tea': 'Snacks & Beverages',
+    'coffee': 'Snacks & Beverages',
+    'juice': 'Snacks & Beverages',
+    'other': 'Others',
   };
   return aliases[v] ?? 'Others';
 }
