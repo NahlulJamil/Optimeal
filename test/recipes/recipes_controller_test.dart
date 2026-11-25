@@ -12,9 +12,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Returns [perCall] fresh recipes on every call.
 class _FakeAi implements RecipeAiClient {
-  _FakeAi({this.perCall = 3});
+  _FakeAi({this.perCall = 3, this.fixedIds});
 
   final int perCall;
+
+  /// When set, every call returns these ids (like an AI that reuses ids).
+  final List<String>? fixedIds;
   int calls = 0;
   AiException? failure;
   List<String> lastExcluded = const [];
@@ -35,7 +38,7 @@ class _FakeAi implements RecipeAiClient {
     return [
       for (var i = 0; i < perCall; i++)
         Recipe(
-          recipeId: 'gen_${calls}_$i',
+          recipeId: fixedIds?[i] ?? 'gen_${calls}_$i',
           name: 'Recipe $calls-$i',
           description: 'd',
           illustrationKey: 'recipe_western',
@@ -294,5 +297,27 @@ void main() {
     final after = c.read(recipesControllerProvider).value!.recipes;
     expect(after.first.recipeId, last.recipeId);
     expect(after.first.lastAccessedAt, now);
+  });
+
+  test('generate never overwrites cached recipes or uses unsafe ids',
+      () async {
+    ai = _FakeAi(perCall: 2, fixedIds: const ['r_001', 'bad/id']);
+    final c = makeContainer();
+    final controller = await load(c);
+    final cached = c
+        .read(recipesControllerProvider)
+        .value!
+        .recipes
+        .firstWhere((r) => r.recipeId == 'r_001');
+
+    final first = await controller.generate(ingredients: _ingredients);
+    final second = await controller.generate(ingredients: _ingredients);
+
+    final ids = [...first, ...second].map((r) => r.recipeId).toList();
+    expect(ids.toSet(), hasLength(4));
+    expect(ids, everyElement(isNot(anyOf('r_001', 'bad/id'))));
+    expect(ids.every(isSafeRecipeId), isTrue);
+    final data = c.read(recipesControllerProvider).value!;
+    expect(data.find('r_001')?.name, cached.name);
   });
 }

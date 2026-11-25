@@ -65,6 +65,9 @@ final recipeAiClientProvider = Provider<RecipeAiClient>((ref) {
   );
 });
 
+/// `true` when [id] can be used as a Firestore document id and cache key.
+bool isSafeRecipeId(String id) => RegExp(r'^[A-Za-z0-9_-]{1,64}$').hasMatch(id);
+
 /// Cached recommendations plus favorites for the signed-in user.
 class RecipesData {
   const RecipesData({this.recipes = const [], this.favorites = const []});
@@ -217,10 +220,28 @@ class RecipesController extends AsyncNotifier<RecipesData> {
           excludeRecipeIds: [for (final r in _data.recipes) r.recipeId],
         );
 
+    // IDs become Firestore document ids and cache keys: replace any id that
+    // is unsafe as a document id or already used, so a new result never
+    // overwrites a cached or favorite recipe (older Workers let the AI pick
+    // ids such as "r_001" on every call).
+    final taken = {
+      for (final r in _data.recipes) r.recipeId,
+      for (final f in _data.favorites) f.favoriteId,
+    };
+    var seq = 0;
+    String uniqueId(String id) {
+      if (isSafeRecipeId(id) && taken.add(id)) return id;
+      String next;
+      do {
+        next = 'r_${now.microsecondsSinceEpoch.toRadixString(36)}_${seq++}';
+      } while (!taken.add(next));
+      return next;
+    }
+
     final stamped = [
       for (final r in fresh)
         Recipe(
-          recipeId: r.recipeId,
+          recipeId: uniqueId(r.recipeId),
           name: r.name,
           description: r.description,
           illustrationKey: r.illustrationKey,
