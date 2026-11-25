@@ -3,6 +3,10 @@
   "name": "optimeal-ai",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-20",
+  // Alamat publik yang dipanggil aplikasi: https://optimeal-ai.optimeal.workers.dev
+  "workers_dev": true,
+  // Preview URL per versi tidak dipakai; matikan agar hanya satu alamat aktif.
+  "preview_urls": false,
   "observability": {
     "enabled": true
   },

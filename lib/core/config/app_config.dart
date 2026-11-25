@@ -9,7 +9,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 abstract final class AppConfig {
   static const String aiProxyUrl = String.fromEnvironment(
     'AI_PROXY_URL',
-    defaultValue: 'https://optimeal-ai.nahluljamil-a.workers.dev',
+    defaultValue: 'https://optimeal-ai.optimeal.workers.dev',
   );
 
   static const bool _useMockFlag = bool.fromEnvironment(
