@@ -24,6 +24,11 @@ abstract final class AppColors {
 
   /// Recipe ingredient chip on Home (Figma `#F4F7F4`).
   static const Color tag = Color(0xFFF4F7F4);
+
+  /// Profile menu row and logout row (Figma "profile", `#F1F9F1` / `#FFF0F0`).
+  static const Color menuRow = Color(0xFFF1F9F1);
+  static const Color logoutRow = Color(0xFFFFF0F0);
+
   static const Color navInactive = Color(0xFF8E8E8E);
   static const Color scannerOverlay = Color(0xB3262624);
   static const Color glassButton = Color(0xCCE6E6E3);
@@ -32,6 +37,11 @@ abstract final class AppColors {
 /// Card shadow used by list rows and floating buttons in Figma.
 const List<BoxShadow> appCardShadow = [
   BoxShadow(color: Color(0x14000000), blurRadius: 12, offset: Offset(0, 2)),
+];
+
+/// Row shadow from the Profile menu (Figma `0 1 2.8 rgba(0,0,0,0.09)`).
+const List<BoxShadow> menuRowShadow = [
+  BoxShadow(color: Color(0x17000000), blurRadius: 2.8, offset: Offset(0, 1)),
 ];
 
 /// Radius dan tinggi kontrol sesuai Figma: field 16, tombol utama 56 (pill).

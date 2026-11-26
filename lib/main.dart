@@ -18,6 +18,7 @@ import 'features/notification/application/notification_providers.dart';
 import 'features/notification/domain/notification_planner.dart';
 import 'features/pantry/presentation/food_detail_screen.dart';
 import 'features/pantry/presentation/pantry_screen.dart';
+import 'features/profile/presentation/profile_screen.dart';
 import 'features/recipes/presentation/recipe_detail_screen.dart';
 import 'features/recipes/presentation/recipes_screen.dart';
 import 'features/scanner/presentation/scanner_screen.dart';
@@ -109,7 +110,8 @@ class _AuthSplash extends StatelessWidget {
 /// navigator so the bar stays visible on pushed screens, as in Figma.
 ///
 /// Home is Developer 1's screen; Pantry and Recipe Finder come from Developers
-/// 2 and 3. The Profile tab is still the temporary placeholder.
+/// 2 and 3. Profile shows the Figma hub; its sub-screens are added one by one
+/// as their Figma frames land.
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
@@ -216,30 +218,13 @@ class _AppShellState extends ConsumerState<AppShell> {
               ),
             ),
           ),
-          const _OwnedElsewhere(tab: AppTab.profile),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: AppBottomNav(
         current: _tab,
         onTabSelected: (t) => setState(() => _tab = t),
         onAddPressed: _openAdd,
-      ),
-    );
-  }
-}
-
-class _OwnedElsewhere extends StatelessWidget {
-  const _OwnedElsewhere({required this.tab});
-
-  final AppTab tab;
-
-  @override
-  Widget build(BuildContext context) {
-    const owner = 'Developer 1';
-    return Center(
-      child: Text(
-        '${tab.name[0].toUpperCase()}${tab.name.substring(1)} is built by $owner.',
-        style: const TextStyle(color: AppColors.textSecondary),
       ),
     );
   }
