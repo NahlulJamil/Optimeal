@@ -12,7 +12,7 @@
 
 **Terakhir diperbarui:** 24 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Versi 1.13 menetapkan **implementasi halaman Profile** dari frame Figma "profile", **perilaku foto profil** tanpa Cloud Storage, dan **pembersihan data lokal saat logout**. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -403,6 +403,7 @@ Profile digunakan untuk mengelola informasi dan preferensi akun pengguna.
 **Kebutuhan fungsional:**
 
 - Pengguna dapat melihat informasi profil: foto, nama, dan email.
+- Foto profil ditampilkan dari `photoURL` akun Firebase bila tersedia. Akun email/sandi tidak memiliki foto, sehingga avatar menampilkan inisial nama. Tidak ada fitur unggah foto profil karena aplikasi tidak memakai Cloud Storage (Bagian 5.6).
 - Halaman Profile menampilkan daftar menu berikut:
   - **Profile Details** — melihat dan mengubah nama/informasi profil.
   - **Password** — mengubah kata sandi akun.
@@ -978,7 +979,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 ### v1.10 → v1.11
 
 1. **Dark Mode dan Language dicabut dari lingkup produk.** Aplikasi hanya memakai **tema terang** dan antarmuka **English**. Menu Profile, matriks offline, preferensi pengguna, penyimpanan lokal, kriteria acceptance, dan keputusan desain disesuaikan. Ini mencabut butir 4, 5, dan 8 pada changelog v1.4 serta kriteria acceptance Dark Mode/Language.
-2. **Halaman Profile & Settings belum tersedia di Figma.** Struktur menu pada 3.7 tetap menjadi acuan sampai desain ditambahkan tim; AI tidak boleh mengarang tampilan Profile (Bagian 13.2 butir 2).
+2. **Frame utama Profile sudah tersedia di Figma** (`433:838`), sedangkan sub-screen **Profile Details**, **Password**, **Support**, dan **About** menyusul pada frame terpisah. **Notifications** belum digambar. AI tidak boleh mengarang tampilan sub-screen yang belum ada (Bagian 13.2 butir 2).
 3. **Perilaku Home yang tidak digambar di Figma ditetapkan:** ikon lonceng membuka bottom sheet berisi bahan yang mendekati batas estimasi, dan banner peringatan membuka Recipe Finder.
 4. **Tag bahan pada kartu resep Home memakai nama bahan**, bukan jumlah (mis. "Pasta", "Spinach"), agar label tidak terpotong.
 
@@ -989,6 +990,13 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 3. **Kegagalan sinkronisasi tidak menghentikan aplikasi** (Bagian 7.4): status gagal tampil sebagai baris informasi, bukan layar error.
 4. **Kesegaran data ditentukan oleh metadata Firestore** (`isFromCache`), bukan oleh deteksi konektivitas perangkat. Pembacaan yang dilayani cache selalu dilaporkan sebagai offline, sehingga waktu "sinkronisasi terakhir" tidak pernah menyesatkan. Saat offline, Pantry membaca cache perangkat secara langsung agar tidak menunggu server yang tidak dapat menjawab.
 5. **Penulisan data tetap terkunci pada jaringan tanpa internet.** Tombol tambah/ubah/hapus memakai status kesegaran Firestore, bukan hanya status konektivitas, sehingga wifi yang tersambung tanpa akses internet tidak menampilkan tombol aktif yang berakhir gagal. Jika koneksi terputus tepat saat menyimpan, pesan yang tampil sama dengan pesan tombol nonaktif.
+
+### v1.12 → v1.13
+
+1. **Halaman Profile diimplementasikan** dari frame Figma "profile" (`433:838`): avatar, nama, email, daftar menu, dan tombol Logout. Baris **Dark Mode** dan **Language** pada frame tidak diikutkan karena keduanya sudah dicabut pada v1.11. Tombol kembali pada frame juga tidak dipakai karena Profile adalah tab utama tanpa tujuan kembali.
+2. **Foto profil memakai `photoURL` Firebase** bila tersedia; akun email/sandi menampilkan inisial nama. Badge kamera pada Figma tidak dipakai karena tidak ada Cloud Storage untuk menyimpan foto profil secara permanen.
+3. **Logout menghapus data lokal sebelum mengakhiri sesi:** foto bahan (`PhotoStore.clear`), favorit dan kuota resep (`LocalRecipeStore.clear`), serta waktu sinkronisasi terakhir (`SyncStatusController.clear`). Kegagalan salah satu langkah tidak boleh menahan proses logout.
+4. **Sub-screen Profile Details, Password, Support, dan About** sudah tersedia di Figma dan diimplementasikan menyusul; **Notifications** belum memiliki frame sehingga barisnya belum dapat diaktifkan.
 
 ## 12.2 Keputusan yang Diambil
 
@@ -1033,7 +1041,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 9. **Status bar pada desain bergaya iOS**, sedangkan target platform adalah Android. Komponen status bar akan diganti status bar sistem Android saat implementasi.
 10. **Aksi hapus resep** menghapus data dari cache dan favorit; perlu dialog konfirmasi agar tidak menghapus favorit pengguna secara tidak sengaja.
 11. **Baris status sinkronisasi belum ada di Figma.** Frame Pantry tidak memiliki slot untuk waktu sinkronisasi terakhir yang diwajibkan Bagian 7.5. Penempatan saat ini (di bawah chip lokasi) adalah keputusan implementasi; tim perlu menambahkan elemen ini ke Figma atau menyetujui penempatannya secara resmi.
-12. **Logout belum diimplementasikan.** Saat alur Profile & Settings dibuat, logout wajib memanggil pembersihan data lokal: foto (`PhotoStore.clear`), favorit dan kuota resep (`LocalRecipeStore.clear`), serta waktu sinkronisasi terakhir (`SyncStatusController.clear`).
+12. **Logout sudah diimplementasikan** dan membersihkan data lokal: foto (`PhotoStore.clear`), favorit dan kuota resep (`LocalRecipeStore.clear`), serta waktu sinkronisasi terakhir (`SyncStatusController.clear`). Pembersihan berjalan best-effort agar kegagalan salah satu langkah tidak menahan logout.
 
 ---
 
