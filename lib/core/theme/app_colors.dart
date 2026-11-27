@@ -25,9 +25,9 @@ abstract final class AppColors {
   /// Recipe ingredient chip on Home (Figma `#F4F7F4`).
   static const Color tag = Color(0xFFF4F7F4);
 
-  /// Profile menu row and logout row (Figma "profile", `#F1F9F1` / `#FFF0F0`).
+  /// Profile menu row and logout row (Figma "profile", `#F1F9F1` / `#FFF0ED`).
   static const Color menuRow = Color(0xFFF1F9F1);
-  static const Color logoutRow = Color(0xFFFFF0F0);
+  static const Color logoutRow = dangerSoft;
 
   static const Color navInactive = Color(0xFF8E8E8E);
   static const Color scannerOverlay = Color(0xB3262624);

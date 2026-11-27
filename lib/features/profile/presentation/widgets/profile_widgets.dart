@@ -65,7 +65,9 @@ class _Initials extends StatelessWidget {
   }
 }
 
-/// Red-tinted Logout action button reused on Profile Hub and Profile Details.
+/// Logout action button on Profile Hub, styled with the same soft-danger
+/// palette (`AppColors.dangerSoft` + `AppColors.danger`) as `ExpiringBanner`
+/// on Home.
 class LogoutRowButton extends StatelessWidget {
   const LogoutRowButton({super.key, required this.onTap});
 
@@ -73,34 +75,37 @@ class LogoutRowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.logoutRow,
-      borderRadius: BorderRadius.circular(16),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 44),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: menuRowShadow,
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.logout, size: 23, color: AppColors.danger),
-              SizedBox(width: 18),
-              Expanded(
-                child: Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.danger,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.dangerSoft,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: menuRowShadow,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: const Row(
+              children: [
+                Icon(Icons.logout, size: 23, color: AppColors.danger),
+                SizedBox(width: 18),
+                Expanded(
+                  child: Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.danger,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -406,7 +406,7 @@ Profile digunakan untuk mengelola informasi dan preferensi akun pengguna.
 - Pengguna dapat melihat informasi profil: foto, nama, dan email.
 - Foto profil ditampilkan dari `photoURL` akun Firebase bila tersedia. Akun email/sandi tidak memiliki foto, sehingga avatar menampilkan inisial nama. Tidak ada fitur unggah foto profil karena aplikasi tidak memakai Cloud Storage (Bagian 5.6).
 - Halaman Profile menampilkan daftar menu berikut:
-  - **Profile Details** — melihat dan mengubah Display Name, Full Name, serta nomor telepon pengguna (Email ditampilkan read-only), beserta tombol **Logout**.
+  - **Profile Details** — melihat dan mengubah Display Name, Full Name, serta nomor telepon pengguna (Email ditampilkan read-only).
   - **Password** — mengubah kata sandi akun (minimal 8 karakter, 1 huruf besar `A-Z`, 1 angka `0-9`).
   - **Notifications** — toggle aktif/nonaktif langsung pada baris menu Profile untuk menyalakan atau mematikan pengingat lokal. Ambang hari tidak memiliki kontrol UI dan memakai nilai bawaan `1`.
   - **Support** — halaman bantuan (*How can we help?*) dengan kartu **Contact support** yang mengarahkan ke Instagram resmi tim.
@@ -1035,7 +1035,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 ### v1.16 → v1.17
 
 1. **Toggle Notifications langsung di Profile Hub:** sesuai desain Figma terbaru, baris **Notifications** memakai switch on/off langsung (menyimpan `notificationsEnabled` ke `users/{uid}` dan menyinkronkan `NotificationPlanner` lokal). Perubahan tetap terkunci saat offline. Ambang hari tidak memiliki kontrol UI dan memakai nilai bawaan `1`.
-2. **Sub-screen Profile diimplementasikan:** **Profile Details** (Display Name, Full Name, Email read-only, Telephone `+62`, Save, Logout), **Change Your Password** (validasi ≥ 8 karakter, ≥ 1 huruf kapital, ≥ 1 angka, re-autentikasi bila diminta Firebase), **Support** (*Contact support* membuka tautan Instagram dukungan), dan **About** (deskripsi dan ringkasan fitur Optimeal), dengan bottom navigation bar tetap tampil.
+2. **Sub-screen Profile diimplementasikan:** **Profile Details** (Display Name, Full Name, Email read-only, Telephone `+62`, Save), **Change Your Password** (validasi ≥ 8 karakter, ≥ 1 huruf kapital, ≥ 1 angka, re-autentikasi bila diminta Firebase), **Support** (*Contact support* membuka tautan Instagram dukungan), dan **About** (deskripsi dan ringkasan fitur Optimeal), dengan bottom navigation bar tetap tampil.
 
 ## 12.2 Keputusan yang Diambil
 

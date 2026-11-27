@@ -10,7 +10,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../auth/domain/auth_validation.dart';
 import '../../auth/presentation/widgets/auth_scaffold.dart';
-import '../application/logout.dart';
 import '../application/profile_providers.dart';
 import 'widgets/profile_widgets.dart';
 
@@ -41,7 +40,6 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
   late String _countryCode;
 
   bool _saving = false;
-  bool _loggingOut = false;
   bool _dirty = false;
   String? _error;
 
@@ -116,16 +114,6 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
     }
   }
 
-  Future<void> _logout() async {
-    if (_loggingOut || _saving) return;
-    setState(() => _loggingOut = true);
-    try {
-      await ref.read(logoutProvider)();
-    } finally {
-      if (mounted) setState(() => _loggingOut = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<ProfileUser?>>(profileControllerProvider, (_, next) {
@@ -135,7 +123,7 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
     });
     final user = ref.watch(profileUserProvider);
     final canWrite = !ref.watch(writeBlockedProvider);
-    final busy = _saving || _loggingOut;
+    final busy = _saving;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -268,14 +256,12 @@ class _ProfileDetailsScreenState extends ConsumerState<ProfileDetailsScreen> {
                       AuthSubmitButton(
                         label: 'Save',
                         busy: _saving,
-                        onPressed: canWrite && !_loggingOut ? _save : null,
+                        onPressed: canWrite ? _save : null,
                       ),
                       if (!canWrite)
                         const OfflineHint(
                           'Saving profile details needs an internet connection.',
                         ),
-                      const SizedBox(height: 12),
-                      LogoutRowButton(onTap: busy ? null : _logout),
                     ],
                   ),
                 ),

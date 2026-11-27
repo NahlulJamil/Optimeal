@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:optimeal/core/connectivity/sync_status.dart';
 import 'package:optimeal/features/auth/application/auth_providers.dart';
 import 'package:optimeal/features/auth/data/auth_repository.dart';
-import 'package:optimeal/features/profile/application/logout.dart';
 import 'package:optimeal/features/profile/application/profile_providers.dart';
 import 'package:optimeal/features/profile/data/external_url_launcher.dart';
 import 'package:optimeal/features/profile/data/profile_repository.dart';
@@ -118,7 +117,7 @@ void main() {
     expect(find.text('Smart Food Management, Zero Food Waste'), findsOneWidget);
   });
 
-  testWidgets('Profile Details saves edits and triggers Logout', (
+  testWidgets('Profile Details saves edits and does not show Logout', (
     tester,
   ) async {
     final repo = _SpyProfileRepository(
@@ -131,7 +130,6 @@ void main() {
         phoneNumber: '81234567812',
       ),
     );
-    var loggedOut = false;
 
     await pumpWithScope(
       tester,
@@ -139,9 +137,6 @@ void main() {
       overrides: [
         profileRepositoryProvider.overrideWithValue(repo),
         writeBlockedProvider.overrideWithValue(false),
-        logoutProvider.overrideWithValue(() async {
-          loggedOut = true;
-        }),
       ],
     );
 
@@ -149,6 +144,7 @@ void main() {
     expect(find.text('Full Name'), findsOneWidget);
     expect(find.text('Email'), findsOneWidget);
     expect(find.text('Telephone'), findsOneWidget);
+    expect(find.text('Logout'), findsNothing);
 
     await tester.enterText(find.byType(TextFormField).at(0), 'Nadine');
     await tester.enterText(find.byType(TextFormField).at(1), 'Nadine Putri');
@@ -161,10 +157,6 @@ void main() {
     expect(repo.savedCountryCode, '+62');
     expect(repo.savedPhone, '81122334455');
     expect(find.text('Profile details saved.'), findsOneWidget);
-
-    await tester.tap(find.text('Logout'));
-    await tester.pumpAndSettle();
-    expect(loggedOut, isTrue);
   });
 
   testWidgets('Profile Details disables saving while offline', (tester) async {
