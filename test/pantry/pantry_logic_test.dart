@@ -146,6 +146,39 @@ void main() {
       );
     });
 
+    test('changing category re-selects the catalog estimate', () {
+      // Manual add: no AI estimate, so the catalog decides (PRD §3.3 rule 3).
+      final e = FoodFormEntry(
+        name: 'Chicken',
+        category: 'Others',
+        location: StorageLocation.fridge,
+        purchaseDate: DateTime(2026, 11, 20),
+      );
+      expect(e.shelfLifeDays, 7);
+      e.category = 'Meat & Seafood';
+      expect(e.shelfLifeDays, 2);
+      expect(e.estimatedEndDate, DateTime(2026, 11, 22));
+    });
+
+    test('an AI estimate survives category changes', () {
+      final e = entry()..category = 'Meat & Seafood';
+      expect(e.shelfLifeDays, 6);
+    });
+
+    test('a manual end date survives category changes', () {
+      final e = entry()..setEstimatedEndDate(DateTime(2026, 11, 30));
+      e.category = 'Meat & Seafood';
+      expect(e.shelfLifeDays, 10);
+    });
+
+    test('editing a saved item keeps a non-default estimate', () async {
+      final items = await container.read(pantryControllerProvider.future);
+      // 4 days is not the catalog default (7) for fruit in the fridge, so it
+      // came from the AI or the user and must not be overwritten.
+      final e = FoodFormEntry.fromItem(items.first)..category = 'Dairy';
+      expect(e.shelfLifeDays, items.first.shelfLifeDays);
+    });
+
     test('validates name and quantity with unit', () {
       final e = entry();
       expect(e.validate(), isNull);

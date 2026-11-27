@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
@@ -106,23 +107,59 @@ class PantryController extends AsyncNotifier<List<FoodItem>> {
   }
 
   /// Saves a new item, then its photo on the device.
+  ///
+  /// [add], [edit] and [remove] throw only when the pantry write itself fails.
+  /// A later step failing must not look like a failed save, because retrying
+  /// would write the same food twice.
   Future<FoodItem> add(FoodDraft draft, {Uint8List? photo}) async {
     final item = await _repo.add(draft);
-    if (photo != null) await _photos.save(item.foodId, photo);
-    await _reload();
+    if (photo != null) {
+      await _bestEffort('Photo save', () => _photos.save(item.foodId, photo));
+    }
+    await _reloadAfterWrite((items) => [...items, item]);
     return item;
   }
 
   Future<FoodItem> edit(FoodItem item) async {
     final updated = await _repo.update(item);
-    await _reload();
+    await _reloadAfterWrite(
+      (items) => [
+        for (final i in items) i.foodId == updated.foodId ? updated : i,
+      ],
+    );
     return updated;
   }
 
   Future<void> remove(String foodId) async {
     await _repo.delete(foodId);
-    await _photos.delete(foodId);
-    await _reload();
+    await _bestEffort('Photo delete', () => _photos.delete(foodId));
+    await _reloadAfterWrite(
+      (items) => [
+        for (final i in items)
+          if (i.foodId != foodId) i,
+      ],
+    );
+  }
+
+  /// Re-reads the pantry; if that fails, applies the written change to the
+  /// current list instead. [_fetch] already reports the sync problem.
+  Future<void> _reloadAfterWrite(
+    List<FoodItem> Function(List<FoodItem> items) apply,
+  ) async {
+    try {
+      await _reload();
+    } on Object catch (error) {
+      debugPrint('Pantry re-read after a write failed: $error');
+      state = AsyncData(_sorted(apply(state.value ?? const [])));
+    }
+  }
+
+  Future<void> _bestEffort(String label, Future<void> Function() action) async {
+    try {
+      await action();
+    } on Object catch (error) {
+      debugPrint('$label failed: $error');
+    }
   }
 }
 

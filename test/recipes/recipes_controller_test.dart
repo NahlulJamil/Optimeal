@@ -101,28 +101,30 @@ void main() {
     expect(data.favorites, isEmpty);
   });
 
-  test('generate stores new recipes, excludes known ids, passes cuisine',
-      () async {
-    final c = makeContainer();
-    final controller = await load(c);
-    final before = c.read(recipesControllerProvider).value!.recipes;
+  test(
+    'generate stores new recipes, excludes known ids, passes cuisine',
+    () async {
+      final c = makeContainer();
+      final controller = await load(c);
+      final before = c.read(recipesControllerProvider).value!.recipes;
 
-    final fresh = await controller.generate(
-      ingredients: _ingredients,
-      cuisine: 'Japanese',
-    );
+      final fresh = await controller.generate(
+        ingredients: _ingredients,
+        cuisine: 'Japanese',
+      );
 
-    expect(fresh, hasLength(3));
-    expect(ai.lastCuisine, 'Japanese');
-    expect(ai.lastExcluded, before.map((r) => r.recipeId).toList());
-    final data = c.read(recipesControllerProvider).value!;
-    expect(data.recipes.map((r) => r.recipeId), containsAll(['gen_1_0']));
-    // Server timestamps are replaced by the client clock.
-    expect(
-      data.recipes.firstWhere((r) => r.recipeId == 'gen_1_0').generatedAt,
-      now,
-    );
-  });
+      expect(fresh, hasLength(3));
+      expect(ai.lastCuisine, 'Japanese');
+      expect(ai.lastExcluded, before.map((r) => r.recipeId).toList());
+      final data = c.read(recipesControllerProvider).value!;
+      expect(data.recipes.map((r) => r.recipeId), containsAll(['gen_1_0']));
+      // Server timestamps are replaced by the client clock.
+      expect(
+        data.recipes.firstWhere((r) => r.recipeId == 'gen_1_0').generatedAt,
+        now,
+      );
+    },
+  );
 
   test('cache never grows past 10 recipes', () async {
     ai = _FakeAi(perCall: 6);
@@ -136,32 +138,35 @@ void main() {
     expect(recipes, hasLength(RecipeLimits.cacheMaxRecipes));
   });
 
-  test('the 11th request within an hour is refused before the Worker', () async {
-    final c = makeContainer();
-    final controller = await load(c);
-    for (var i = 0; i < RecipeLimits.generatePerHour; i++) {
-      now = now.add(const Duration(minutes: 1));
-      await controller.generate(ingredients: _ingredients);
-    }
-    expect(ai.calls, RecipeLimits.generatePerHour);
+  test(
+    'the 11th request within an hour is refused before the Worker',
+    () async {
+      final c = makeContainer();
+      final controller = await load(c);
+      for (var i = 0; i < RecipeLimits.generatePerHour; i++) {
+        now = now.add(const Duration(minutes: 1));
+        await controller.generate(ingredients: _ingredients);
+      }
+      expect(ai.calls, RecipeLimits.generatePerHour);
 
-    await expectLater(
-      controller.generate(ingredients: _ingredients),
-      throwsA(
-        isA<RecipeActionException>().having(
-          (e) => e.failure,
-          'failure',
-          RecipeFailure.quotaReached,
+      await expectLater(
+        controller.generate(ingredients: _ingredients),
+        throwsA(
+          isA<RecipeActionException>().having(
+            (e) => e.failure,
+            'failure',
+            RecipeFailure.quotaReached,
+          ),
         ),
-      ),
-    );
-    expect(ai.calls, RecipeLimits.generatePerHour);
+      );
+      expect(ai.calls, RecipeLimits.generatePerHour);
 
-    // An hour after the first request, generating works again.
-    now = now.add(const Duration(hours: 1));
-    await controller.generate(ingredients: _ingredients);
-    expect(ai.calls, RecipeLimits.generatePerHour + 1);
-  });
+      // An hour after the first request, generating works again.
+      now = now.add(const Duration(hours: 1));
+      await controller.generate(ingredients: _ingredients);
+      expect(ai.calls, RecipeLimits.generatePerHour + 1);
+    },
+  );
 
   test('offline refuses generate and favorite changes', () async {
     final c = makeContainer();
@@ -284,23 +289,24 @@ void main() {
     expect(data.find(recipe.recipeId), isNull);
   });
 
-  test('touch moves a recipe to the front and updates lastAccessedAt',
-      () async {
-    final c = makeContainer();
-    final controller = await load(c);
-    final recipes = c.read(recipesControllerProvider).value!.recipes;
-    final last = recipes.last;
+  test(
+    'touch moves a recipe to the front and updates lastAccessedAt',
+    () async {
+      final c = makeContainer();
+      final controller = await load(c);
+      final recipes = c.read(recipesControllerProvider).value!.recipes;
+      final last = recipes.last;
 
-    now = now.add(const Duration(days: 1));
-    await controller.touch(last.recipeId);
+      now = now.add(const Duration(days: 1));
+      await controller.touch(last.recipeId);
 
-    final after = c.read(recipesControllerProvider).value!.recipes;
-    expect(after.first.recipeId, last.recipeId);
-    expect(after.first.lastAccessedAt, now);
-  });
+      final after = c.read(recipesControllerProvider).value!.recipes;
+      expect(after.first.recipeId, last.recipeId);
+      expect(after.first.lastAccessedAt, now);
+    },
+  );
 
-  test('generate never overwrites cached recipes or uses unsafe ids',
-      () async {
+  test('generate never overwrites cached recipes or uses unsafe ids', () async {
     ai = _FakeAi(perCall: 2, fixedIds: const ['r_001', 'bad/id']);
     final c = makeContainer();
     final controller = await load(c);

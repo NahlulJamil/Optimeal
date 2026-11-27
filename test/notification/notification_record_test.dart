@@ -165,6 +165,8 @@ class _NoopService implements NotificationService {
   @override
   Future<void> requestPermissions() async {}
   @override
+  Future<void> cancelAll() async {}
+  @override
   Future<String?> launchPayload() async => null;
   @override
   Future<void> replaceAll(

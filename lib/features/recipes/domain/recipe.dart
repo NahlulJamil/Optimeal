@@ -116,7 +116,12 @@ class Recipe {
     final available = list('ingredientsAvailable', mayBeEmpty: true);
     final missing = list('ingredientsMissing', mayBeEmpty: true);
     final equipment = list('equipment', mayBeEmpty: true);
-    final steps = list('steps');
+    // The Instructions tab numbers the steps, so numbering written by the AI
+    // would show twice ("1. 1. Boil…").
+    final steps = [
+      for (final s in list('steps') ?? const <String>[])
+        if (_withoutStepNumber(s) case final step when step.isNotEmpty) step,
+    ];
 
     if (id == null ||
         name == null ||
@@ -128,7 +133,7 @@ class Recipe {
         available == null ||
         missing == null ||
         equipment == null ||
-        steps == null ||
+        steps.isEmpty ||
         available.length + missing.length == 0) {
       return null;
     }
@@ -150,6 +155,21 @@ class Recipe {
       lastAccessedAt: date('lastAccessedAt') ?? generated,
     );
   }
+}
+
+/// "1.", "2)", "(3)" or "Step 4:" at the start of a step. A decimal such as
+/// "1.5 liters" is not a step number.
+final _stepNumber = RegExp(
+  r'^(?:step\s*\d{1,2}\s*[.):-]?|\(\d{1,2}\)|\d{1,2}\s*[.)](?!\d))\s*',
+  caseSensitive: false,
+);
+
+String _withoutStepNumber(String step) {
+  var text = step;
+  while (_stepNumber.hasMatch(text)) {
+    text = text.replaceFirst(_stepNumber, '');
+  }
+  return text;
 }
 
 /// A saved recipe with a full snapshot, so it opens offline (PRD §3.8).

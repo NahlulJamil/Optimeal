@@ -10,7 +10,7 @@ import '../../../core/widgets/app_widgets.dart';
 import '../application/recipe_providers.dart';
 import '../domain/recipe.dart';
 import 'widgets/recipe_card.dart';
-import 'widgets/recipe_illustration.dart';
+import 'widgets/recipe_picture.dart';
 
 /// Recipe detail (Figma "recipes" 423:81 / 433:525 / 433:600): picture with
 /// back and delete buttons, name, description, Cooking Time + Cuisine cards,
@@ -36,9 +36,8 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     // Opening a recipe counts as access for cache eviction (PRD §3.5).
     unawaited(
       Future<void>.microtask(
-        () => ref
-            .read(recipesControllerProvider.notifier)
-            .touch(widget.recipeId),
+        () =>
+            ref.read(recipesControllerProvider.notifier).touch(widget.recipeId),
       ),
     );
   }
@@ -54,9 +53,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       return;
     }
     final isFavorite =
-        ref.read(recipesControllerProvider).value?.isFavorite(
-          recipe.recipeId,
-        ) ??
+        ref
+            .read(recipesControllerProvider)
+            .value
+            ?.isFavorite(recipe.recipeId) ??
         false;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -127,10 +127,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
         value: SystemUiOverlayStyle.dark,
         child: Stack(
           children: [
-            RecipeIllustration(
-              illustrationKey: recipe.illustrationKey,
-              height: 400,
-            ),
+            RecipePicture(recipe: recipe, height: 400),
             SingleChildScrollView(
               padding: const EdgeInsets.only(top: 360),
               child: Container(
@@ -140,9 +137,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 ),
                 decoration: const BoxDecoration(
                   color: AppColors.background,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(32),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                 ),
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
                 child: Column(
@@ -223,6 +218,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                         color: AppColors.textSecondary,
                       ),
                     ),
+                    RecipePhotoCredit(recipe: recipe),
                   ],
                 ),
               ),

@@ -22,7 +22,8 @@ Widget _app() => ProviderScope(
     recipeAiClientProvider.overrideWithValue(
       MockRecipeAiClient(
         latency: Duration.zero,
-        loadFixture: () => File('assets/fixtures/ai_responses.json').readAsString(),
+        loadFixture: () =>
+            File('assets/fixtures/ai_responses.json').readAsString(),
       ),
     ),
   ],

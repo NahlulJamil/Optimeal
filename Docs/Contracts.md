@@ -1,8 +1,8 @@
 # KONTRAK DATA & API — OPTIMEAL
 
-**Versi:** 1.0
+**Versi:** 1.1
 
-**Mengacu pada:** PRD Optimeal v1.4 dan DevelopmentPlan v1.4
+**Mengacu pada:** PRD Optimeal v1.14 dan DevelopmentPlan v1.11
 
 **Pemilik:** Developer 1 (Core Application, Backend & Integrasi)
 
@@ -121,7 +121,7 @@ Path: `users/{uid}/recipes/{recipeId}`
 | `recipeId` | String | ❌ | ID unik. |
 | `name` | String | ❌ | — |
 | `description` | String | ❌ | — |
-| `illustrationKey` | String | ❌ | Kunci asset lokal, bukan URL. |
+| `illustrationKey` | String | ❌ | Kunci ikon cadangan, bukan URL. Foto resep tidak disimpan di model ini (PRD 6.3). |
 | `cuisine` | String | ❌ | Mis. `Western`, `Indonesian`. |
 | `cookingTechnique` | String | ❌ | Mis. `Saute`, `Steam`. |
 | `cookingTimeMinutes` | Integer | ❌ | ≥ 1. |
@@ -382,3 +382,4 @@ Aturan fixture:
 | Versi | Tanggal | Perubahan |
 |---|---|---|
 | 1.0 | 19 Nov 2026 | Versi awal: model `FoodItem`, `Recipe`, `FavoriteRecipe`, `NotificationRecord`, `UserProfile`; endpoint `analyze-food`, `analyze-barcode`, `generate-recipes`; enum `storageLocation` memakai `room_temperature`. |
+| 1.1 | 27 Nov 2026 | `illustrationKey` menjadi kunci ikon cadangan karena foto resep kini dari Wikimedia Commons (PRD v1.14). Tidak ada perubahan field atau endpoint. |

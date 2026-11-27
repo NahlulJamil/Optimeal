@@ -5,7 +5,7 @@ import '../../../../core/connectivity/online_status.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../application/recipe_providers.dart';
 import '../../domain/recipe.dart';
-import 'recipe_illustration.dart';
+import 'recipe_picture.dart';
 
 /// Recipe card from Figma "recipes": picture, bold name, short description.
 /// The favorite heart is the PRD §3.8 addition (not yet drawn in Figma).
@@ -37,10 +37,7 @@ class RecipeCard extends ConsumerWidget {
             children: [
               Stack(
                 children: [
-                  RecipeIllustration(
-                    illustrationKey: recipe.illustrationKey,
-                    height: 150,
-                  ),
+                  RecipePicture(recipe: recipe, height: 150),
                   Positioned(
                     top: 8,
                     right: 8,
