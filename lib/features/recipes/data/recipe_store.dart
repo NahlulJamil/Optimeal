@@ -125,9 +125,8 @@ class FirestoreRecipeRemoteStore implements RecipeRemoteStore {
   }
 
   @override
-  Future<void> putFavorite(FavoriteRecipe favorite) => _favorites
-      .doc(favorite.favoriteId)
-      .set(favoriteToFirestore(favorite));
+  Future<void> putFavorite(FavoriteRecipe favorite) =>
+      _favorites.doc(favorite.favoriteId).set(favoriteToFirestore(favorite));
 
   @override
   Future<void> deleteFavorite(String recipeId) =>
@@ -150,7 +149,8 @@ Map<String, Object?> favoriteToFirestore(FavoriteRecipe f) => {
 };
 
 Map<String, Object?> _datesToIso(Map<String, dynamic> data) {
-  Object? iso(Object? v) => v is Timestamp ? v.toDate().toUtc().toIso8601String() : v;
+  Object? iso(Object? v) =>
+      v is Timestamp ? v.toDate().toUtc().toIso8601String() : v;
   return {
     ...data,
     'generatedAt': iso(data['generatedAt']),
@@ -189,9 +189,7 @@ class LocalRecipeStore {
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! List) return const [];
-      return [
-        for (final e in decoded) ?FavoriteRecipe.tryParse(e, now: now),
-      ];
+      return [for (final e in decoded) ?FavoriteRecipe.tryParse(e, now: now)];
     } on FormatException {
       return const [];
     }
@@ -205,9 +203,7 @@ class LocalRecipeStore {
 
   List<DateTime> readGenerateTimes() {
     final raw = _prefs.getStringList(_quotaKey) ?? const [];
-    return [
-      for (final s in raw) ?DateTime.tryParse(s),
-    ];
+    return [for (final s in raw) ?DateTime.tryParse(s)];
   }
 
   Future<void> writeGenerateTimes(Iterable<DateTime> times) =>
