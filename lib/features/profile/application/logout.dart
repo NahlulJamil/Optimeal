@@ -8,17 +8,20 @@ import '../../notification/application/notification_providers.dart';
 import '../../notification/data/notification_service.dart';
 import '../../pantry/application/pantry_providers.dart';
 import '../../pantry/data/photo_store.dart';
+import '../../recipes/application/recipe_providers.dart';
+import '../../recipes/data/recipe_photo_store.dart';
 import '../../recipes/data/recipe_store.dart';
 import 'profile_providers.dart';
 
 /// Signs the user out and clears the device data that must not outlive the
 /// session (PRD §6.7, §12.3 note 12): scheduled reminders, food photos,
-/// favourites and the recipe quota, and the last-sync timestamp.
+/// recipe photos, favourites and the recipe quota, and the last-sync timestamp.
 final logoutProvider = Provider<Future<void> Function()>((ref) {
   return () async {
     await clearLocalSessionData(
       notifications: ref.read(notificationServiceProvider),
       photos: ref.read(photoStoreProvider),
+      recipePhotos: ref.read(recipePhotoStoreProvider),
       sync: ref.read(syncStatusProvider.notifier),
       userId: ref.read(profileUserProvider)?.uid,
     );
@@ -31,11 +34,13 @@ final logoutProvider = Provider<Future<void> Function()>((ref) {
 Future<void> clearLocalSessionData({
   required NotificationService notifications,
   required PhotoStore photos,
+  required RecipePhotoStore recipePhotos,
   required SyncStatusController sync,
   required String? userId,
 }) async {
   await _step('reminders', notifications.cancelAll);
   await _step('photos', photos.clear);
+  await _step('recipe photos', recipePhotos.clear);
   if (userId != null) {
     await _step('recipes', () async {
       final prefs = await SharedPreferences.getInstance();

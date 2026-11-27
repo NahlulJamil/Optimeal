@@ -10,7 +10,7 @@ import '../../pantry/application/pantry_providers.dart';
 import '../../pantry/presentation/widgets/food_list_tile.dart';
 import '../../recipes/application/recipe_providers.dart';
 import '../../recipes/domain/recipe.dart';
-import '../../recipes/presentation/widgets/recipe_illustration.dart';
+import '../../recipes/presentation/widgets/recipe_picture.dart';
 import '../application/home_providers.dart';
 
 /// Figma frame "home" (293:27): greeting, storage summary, expiring banner,
@@ -489,8 +489,8 @@ class _HomeRecipeCard extends StatelessWidget {
               SizedBox(
                 width: 88,
                 height: 88,
-                child: RecipeIllustration(
-                  illustrationKey: recipe.illustrationKey,
+                child: RecipePicture(
+                  recipe: recipe,
                   height: 88,
                   borderRadius: BorderRadius.circular(16),
                 ),

@@ -13,6 +13,7 @@ import '../../scanner/application/scanner_providers.dart'
     show idTokenSourceProvider;
 import '../../scanner/data/ai_client.dart';
 import '../data/recipe_ai_client.dart';
+import '../data/recipe_photo_store.dart';
 import '../data/recipe_store.dart';
 import '../domain/recipe.dart';
 import '../domain/recipe_policy.dart';
@@ -32,7 +33,9 @@ class RecipeActionException implements Exception {
   String toString() => 'RecipeActionException($failure)';
 }
 
-final recipeClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+final recipeClockProvider = Provider<DateTime Function()>(
+  (ref) => DateTime.now,
+);
 
 /// Mock mode uses a fixed id; otherwise the signed-in user (or `null`).
 final recipeUserIdProvider = Provider<String?>((ref) {
@@ -64,6 +67,27 @@ final recipeAiClientProvider = Provider<RecipeAiClient>((ref) {
     idToken: ref.watch(idTokenSourceProvider),
   );
 });
+
+final recipePhotoStoreProvider = Provider<RecipePhotoStore>(
+  (ref) => RecipePhotoStore(),
+);
+
+RecipePhotoQuery photoQueryFor(Recipe recipe) => (
+  recipeId: recipe.recipeId,
+  name: recipe.name,
+  ingredient: recipe.ingredientsAvailable.isEmpty
+      ? ''
+      : ingredientTagLabel(recipe.ingredientsAvailable.first),
+);
+
+/// Photo of a recipe, or `null` when none is available (PRD §6.3). Looked up
+/// again after the connection returns.
+final recipePhotoProvider = FutureProvider.autoDispose
+    .family<RecipePhoto?, RecipePhotoQuery>(
+      (ref, query) => ref
+          .watch(recipePhotoStoreProvider)
+          .load(query, online: ref.watch(onlineStatusProvider)),
+    );
 
 /// `true` when [id] can be used as a Firestore document id and cache key.
 bool isSafeRecipeId(String id) => RegExp(r'^[A-Za-z0-9_-]{1,64}$').hasMatch(id);
