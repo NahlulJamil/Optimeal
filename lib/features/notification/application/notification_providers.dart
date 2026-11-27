@@ -54,8 +54,14 @@ final notificationRecordRepositoryProvider =
 /// rebuilt when the app opens, when pantry data changes and when the
 /// preferences change. Watch this provider once at the app root.
 final notificationSyncProvider = Provider<void>((ref) {
+  // Signed out: nothing may be scheduled again after logout cancelled it.
+  if (!AppConfig.useMock && ref.watch(authStateProvider).value == null) return;
   final settings = ref.watch(notificationSettingsProvider);
-  final items = ref.watch(pantryControllerProvider).value;
+  final pantry = ref.watch(pantryControllerProvider);
+  // While reloading (e.g. after switching accounts) or after a failed read,
+  // the value can still be the previous list.
+  if (pantry.isLoading || pantry.hasError) return;
+  final items = pantry.value;
   if (items == null) return;
   final now = DateTime.now();
   final plan = ref

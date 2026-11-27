@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:optimeal/core/config/app_config.dart';
 import 'package:optimeal/core/models/food_item.dart';
+import 'package:optimeal/features/auth/application/auth_providers.dart';
 import 'package:optimeal/features/notification/application/notification_providers.dart';
 import 'package:optimeal/features/notification/data/notification_service.dart';
 import 'package:optimeal/features/notification/domain/notification_planner.dart';
@@ -24,6 +26,9 @@ class FakeNotificationService implements NotificationService {
 
   @override
   Future<String?> launchPayload() async => null;
+
+  @override
+  Future<void> cancelAll() async => plans.clear();
 
   @override
   Future<void> replaceAll(
@@ -97,6 +102,28 @@ void main() {
     await settle();
     container.read(notificationSyncProvider);
     expect(service.plans.last, isEmpty);
+  });
+
+  test('nothing is scheduled while signed out', () async {
+    AppConfig.debugUseMockOverride = false;
+    addTearDown(() => AppConfig.debugUseMockOverride = true);
+    final signedOut = ProviderContainer(
+      overrides: [
+        authStateProvider.overrideWithValue(const AsyncData(null)),
+        pantryRepositoryProvider.overrideWithValue(fixtureRepository()),
+        photoStoreProvider.overrideWithValue(MemoryPhotoStore()),
+        notificationServiceProvider.overrideWithValue(service),
+      ],
+    );
+    addTearDown(signedOut.dispose);
+    service.plans.clear();
+
+    signedOut.listen(notificationSyncProvider, (_, _) {});
+    await signedOut.read(pantryControllerProvider.future);
+    await settle();
+    signedOut.read(notificationSyncProvider);
+
+    expect(service.plans, isEmpty);
   });
 
   test('expiringSoonProvider uses the threshold', () async {
