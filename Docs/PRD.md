@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.14
+**Versi:** 1.15
 
 **Platform:** Mobile Application (Android)
 
@@ -12,7 +12,7 @@
 
 **Terakhir diperbarui:** 27 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Versi 1.13 menetapkan **implementasi halaman Profile** dari frame Figma "profile", **perilaku foto profil** tanpa Cloud Storage, dan **pembersihan data lokal saat logout**. Versi 1.14 mengganti ilustrasi statis resep dengan **foto makanan dari internet (Wikimedia Commons)** yang disimpan di perangkat. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Versi 1.13 menetapkan **implementasi halaman Profile** dari frame Figma "profile", **perilaku foto profil** tanpa Cloud Storage, dan **pembersihan data lokal saat logout**. Versi 1.14 mengganti ilustrasi statis resep dengan **foto makanan dari internet (Wikimedia Commons)** yang disimpan di perangkat. Versi 1.15 menambahkan field **Condition** pada form *Add Food*. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -221,6 +221,7 @@ Food Scanner digunakan untuk mengenali bahan makanan melalui gambar menggunakan 
 | Tanggal pembelian | ✅ | Pengguna | Default: hari ini. |
 | Estimasi masa simpan (hari) | — | Sistem (dapat diubah pengguna) | Ditampilkan otomatis berdasarkan lokasi penyimpanan yang dipilih; dapat diubah pada form hasil scan dan Edit food details. |
 | Tanggal estimasi akhir masa simpan | — | Sistem | Dihitung otomatis: tanggal pembelian + estimasi masa simpan. |
+| Kondisi bahan (**Condition**) | ❌ | AI, dapat dikoreksi | Penjelasan kondisi bahan pada form *Add Food*. Terisi otomatis dari kondisi visual hasil scan; kosong untuk barcode atau isian manual. Tidak diubah lewat Edit food details. |
 | Catatan AI | — | AI | Opsional, ditampilkan sebagai informasi. |
 | Foto bahan | — | Pengguna | Disimpan lokal di perangkat. |
 
@@ -674,7 +675,7 @@ Informasi yang disimpan:
 | `purchaseDate` | Timestamp | Pengguna | Tanggal pembelian. Dapat diubah setelah tersimpan. |
 | `shelfLifeDays` | Number | Sistem / Pengguna | Estimasi masa simpan (hari) sesuai lokasi penyimpanan. Dapat diubah pengguna melalui Edit food details. |
 | `estimatedEndDate` | Timestamp | Sistem | `purchaseDate + shelfLifeDays`; dihitung ulang bila `purchaseDate` berubah. |
-| `visualCondition` | String | AI | Ringkasan bentuk, warna, karakteristik. |
+| `visualCondition` | String | AI / Pengguna | Ringkasan bentuk, warna, karakteristik. Dapat dikoreksi sebelum disimpan. |
 | `aiNote` | String? | AI | Catatan kondisi opsional (mis. "warnanya sudah menguning"). |
 | `hasPhoto` | Boolean | Sistem | Menandai apakah perangkat memiliki foto lokal untuk bahan ini. |
 | `createdAt` | Timestamp | Sistem | Waktu dibuat. |
@@ -1018,6 +1019,10 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 3. **Kredit foto wajib ditampilkan** pada detail resep sesuai lisensi Wikimedia Commons.
 4. **Ikon cadangan** berdasarkan `illustrationKey` tetap dipakai bila foto tidak tersedia. Model data dan kontrak endpoint tidak berubah.
 
+### v1.14 → v1.15
+
+1. **Field Condition ditambahkan pada form *Add Food*** (hasil scan maupun isian manual), setelah Shelf Life Estimate. Isinya memakai field `visualCondition` yang sudah ada, sehingga model data dan kontrak endpoint tidak berubah.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -1065,6 +1070,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 13. **Foto resep belum tentu cocok** karena dicari dari nama masakan; sebagian resep dapat menampilkan ikon cadangan.
 14. **Kontak pada `User-Agent` belum ditetapkan.** Kebijakan Wikimedia meminta kontak (URL atau email tim); tanpa itu batas permintaan dapat jauh lebih ketat. Tim perlu menentukan kontak sebelum demo.
 15. **Tautan lisensi pada kredit foto belum dapat diklik** (kredit ditampilkan sebagai teks).
+16. **Field Condition belum ada di Figma.** Frame *Food Details* perlu ditambahi elemen ini oleh tim.
 
 ---
 
