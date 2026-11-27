@@ -470,7 +470,8 @@ async function generateRecipeImage(request: Request, env: Env) {
     }
     throw new ApiError(500, "AI_FAILURE", "AI request failed");
   } finally {
-    clearTimeout(timer);
+    // Tipe Workers: clearTimeout menerima `number | null`, bukan undefined.
+    clearTimeout(timer ?? null);
   }
 
   if (!image) {
