@@ -1,8 +1,8 @@
 # 1. DEVELOPMENT PLAN
 
-**Versi:** 1.10
+**Versi:** 1.12
 
-**Mengacu pada:** PRD Optimeal v1.14
+**Mengacu pada:** PRD Optimeal v1.17
 
 Pengembangan dilakukan oleh tiga developer dengan pembagian tanggung jawab berdasarkan modul.
 
@@ -32,6 +32,7 @@ Tanggung jawab:
   - endpoint `POST /analyze-food`
   - endpoint `POST /analyze-barcode`
   - endpoint `POST /generate-recipes`
+  - endpoint `POST /generate-recipe-image` (binding Workers AI)
   - menyimpan API key sebagai secret
   - memvalidasi Firebase ID token
 - Menetapkan kontrak data bersama (model `FoodItem`, `Recipe`, `Notification`, `FavoriteRecipe`).
@@ -40,10 +41,10 @@ Tanggung jawab:
 - Profile & Settings.
 - Layer offline: cache lokal Firestore, snapshot Pantry, deteksi konektivitas, status sinkronisasi.
 - **Penyimpanan foto lokal**: direktori file, kompresi thumbnail, pemetaan `foodId → path`, pembersihan saat logout.
-- Navigasi, komponen UI bersama, bundling asset ilustrasi resep. Tema tetap terang (Light Mode) dan bahasa antarmuka hanya English; tidak ada pengaturan tema atau bahasa.
+- Navigasi, komponen UI bersama. Tema tetap terang (Light Mode) dan bahasa antarmuka hanya English; tidak ada pengaturan tema atau bahasa.
 - Integrasi modul dan pengujian aplikasi secara keseluruhan.
 
-Catatan: kepemilikan Worker, Security Rules, dan asset ilustrasi **wajib** ada di satu orang agar tidak menjadi pekerjaan yang tidak bertuan.
+Catatan: kepemilikan Worker dan Security Rules **wajib** ada di satu orang agar tidak menjadi pekerjaan yang tidak bertuan.
 
 ---
 
@@ -76,7 +77,7 @@ Tanggung jawab:
 - Filter lokasi penyimpanan bahan (`room_temperature`/`fridge`/`freezer`, label UI Pantry/Fridge/Freezer), filter cuisine, dan pemilihan bahan tertentu.
 - Integrasi endpoint `generate-recipes`.
 - Halaman daftar rekomendasi dan detail resep (bahan, peralatan, teknik memasak, langkah).
-- Pemilihan ilustrasi lokal berdasarkan cuisine/kategori.
+- Gambar resep buatan AI: panggilan `generate-recipe-image`, penyimpanan di perangkat, keterangan buatan AI, dan ikon cadangan (PRD 6.3).
 - Penanganan cache resep (10 resep/pengguna, TTL 7 hari) dan pesan saat kuota generate tercapai.
 - Fitur Resep Favorit: tambah/hapus, tab Favorit pada halaman Recipe Finder, akses offline dari snapshot lokal.
 - Aksi **hapus resep** pada halaman detail (dengan dialog konfirmasi), termasuk pembersihan cache dan favorit terkait.
@@ -92,7 +93,7 @@ Tanggung jawab:
 - Menyepakati kontrak endpoint Cloudflare Worker (input/output/error).
 - Menyiapkan fixture JSON untuk mock data.
 - Menetapkan struktur folder dan aturan penamaan.
-- Menyepakati daftar asset ilustrasi resep yang akan dibundel.
+- Menyepakati sumber gambar resep dan ikon cadangannya.
 
 **Tahap 1 — Project Setup**
 
@@ -252,6 +253,29 @@ Output sukses:
 
 Error: sama seperti di atas, ditambah `422` bila daftar bahan kosong.
 
+### 4. `POST /generate-recipe-image`
+
+Input:
+
+```
+{
+  name: string,
+  cuisine: string | null,
+  ingredients: [ string ]
+}
+```
+
+Output sukses:
+
+```
+{
+  imageBase64: string,
+  mimeType: "image/jpeg"
+}
+```
+
+Error: `400` nama resep kosong, `401` token tidak valid, `429` kuota Workers AI habis, `500` kegagalan layanan AI, `504` timeout.
+
 **Ketentuan Worker:**
 
 - API key Gemini **hanya** ada di secret Worker, tidak pernah dikirim ke client.
@@ -307,7 +331,7 @@ Sebuah fitur dianggap selesai apabila:
 | Tema dan bahasa saat offline | Tidak berlaku — aplikasi hanya tema terang dan bahasa English. |
 | Tekan "Tambah Bahan" saat offline | Tombol nonaktif + pesan. |
 | Perangkat tersambung wifi tanpa internet | Tombol tambah/ubah/hapus tetap nonaktif + pesan offline (bukan error generik). |
-| Buka tab Favorit saat offline | Daftar favorit & detail resep tampil lengkap dengan ilustrasi lokal. |
+| Buka tab Favorit saat offline | Daftar favorit & detail resep tampil lengkap; foto yang sudah pernah dimuat tetap tampil, sisanya ikon cadangan. |
 | Generate resep saat offline | Tombol nonaktif + pesan. |
 | Tunggu jadwal notifikasi saat offline | Notifikasi lokal muncul dan membuka detail bahan. |
 | Riwayat pengingat gagal disimpan saat offline | Notifikasi tetap terjadwal dari cache Pantry; riwayat Firestore disinkronkan saat online tanpa pesan error. |
@@ -326,4 +350,5 @@ Periksa sebelum demo:
 - [ ] Tidak ada billing account yang terhubung ke project.
 - [ ] API key Gemini hanya ada di secret Cloudflare Worker.
 - [ ] Penggunaan Gemini masih dalam batas free tier.
+- [ ] Workers AI tetap pada paket Free (10.000 neuron/hari, tanpa Workers Paid).
 - [ ] Tidak ada dependensi ke layanan pihak ketiga berbayar.

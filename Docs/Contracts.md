@@ -1,8 +1,8 @@
 # KONTRAK DATA & API — OPTIMEAL
 
-**Versi:** 1.0
+**Versi:** 1.4
 
-**Mengacu pada:** PRD Optimeal v1.14 dan DevelopmentPlan v1.10
+**Mengacu pada:** PRD Optimeal v1.17 dan DevelopmentPlan v1.12
 
 **Pemilik:** Developer 1 (Core Application, Backend & Integrasi)
 
@@ -78,7 +78,7 @@ Path: `users/{uid}/pantry/{foodId}`
 | `purchaseDate` | Timestamp | ❌ | Pengguna | Default hari ini, pukul 00:00 lokal. |
 | `shelfLifeDays` | Integer | ❌ | AI / pengguna | ≥ 1. Bisa di-override manual. |
 | `estimatedEndDate` | Timestamp | ❌ | Sistem | `purchaseDate + shelfLifeDays`. Dihitung ulang setiap kali salah satu berubah. |
-| `visualCondition` | String | ✅ | AI | Boleh kosong untuk hasil barcode. |
+| `visualCondition` | String | ✅ | AI / pengguna | Boleh kosong untuk hasil barcode. Dapat dikoreksi sebelum disimpan. |
 | `aiNote` | String | ✅ | AI | Opsional. |
 | `hasPhoto` | Boolean | ❌ | Sistem | Default `false`. |
 | `createdAt` | Timestamp | ❌ | Sistem | — |
@@ -121,7 +121,7 @@ Path: `users/{uid}/recipes/{recipeId}`
 | `recipeId` | String | ❌ | ID unik. |
 | `name` | String | ❌ | — |
 | `description` | String | ❌ | — |
-| `illustrationKey` | String | ❌ | Kunci asset lokal, bukan URL. |
+| `illustrationKey` | String | ❌ | Kunci ikon cadangan, bukan URL. Gambar resep tidak disimpan di model ini (PRD 6.3). |
 | `cuisine` | String | ❌ | Mis. `Western`, `Indonesian`. |
 | `cookingTechnique` | String | ❌ | Mis. `Saute`, `Steam`. |
 | `cookingTimeMinutes` | Integer | ❌ | ≥ 1. |
@@ -342,6 +342,30 @@ Pesan error tidak boleh membocorkan detail internal (prompt, nama model, stack t
 
 **Error:** `400`, `401`, `422`, `429`, `500`, `504`.
 
+### 4.5 `POST /generate-recipe-image`
+
+**Input:**
+
+```json
+{
+  "name": "Spinach Omelette",
+  "cuisine": "Western",
+  "ingredients": ["Spinach", "Eggs", "Butter"]
+}
+```
+
+- `cuisine` boleh `null`; `ingredients` boleh kosong.
+
+**Output 200:**
+
+```json
+{ "imageBase64": "string", "mimeType": "image/jpeg" }
+```
+
+**Error:** `400`, `401`, `429` (kuota harian Workers AI habis), `500`, `504`.
+
+**Pengecualian retry:** client **tidak** mengulang otomatis endpoint ini, karena setiap percobaan memakai kuota harian. Mode mock tidak memanggil endpoint ini dan menampilkan ikon cadangan.
+
 ---
 
 ## 5. FIXTURE MOCK
@@ -385,3 +409,6 @@ Aturan fixture:
 | Versi | Tanggal | Perubahan |
 |---|---|---|
 | 1.0 | 19 Nov 2026 | Versi awal: model `FoodItem`, `Recipe`, `FavoriteRecipe`, `NotificationRecord`, `UserProfile`; endpoint `analyze-food`, `analyze-barcode`, `generate-recipes`; enum `storageLocation` memakai `room_temperature`. |
+| 1.1 | 27 Nov 2026 | `illustrationKey` menjadi kunci ikon cadangan karena foto resep kini dari Wikimedia Commons (PRD v1.14). Tidak ada perubahan field atau endpoint. |
+| 1.2 | 27 Nov 2026 | `visualCondition` dapat dikoreksi pengguna pada form *Add Food* (PRD v1.15). Tidak ada perubahan field atau endpoint. |
+| 1.3 | 27 Nov 2026 | Endpoint baru `generate-recipe-image` untuk gambar resep buatan AI (PRD v1.16). Tidak ada perubahan field. |

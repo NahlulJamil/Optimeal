@@ -16,6 +16,7 @@ tidak perlu menyentuh kode.
 | POST | `/analyze-food` | `Authorization: Bearer <Firebase ID Token>` |
 | POST | `/analyze-barcode` | sama |
 | POST | `/generate-recipes` | sama |
+| POST | `/generate-recipe-image` | sama |
 
 Kontrak request/response ada di `Docs/Contracts.md`.
 
@@ -81,6 +82,12 @@ curl.exe -s -X POST http://127.0.0.1:8787/generate-recipes -H "Authorization: Be
   saat ini dicek di client sesuai `Contracts.md`. Kalau kuota Gemini habis,
   Worker mengembalikan `429 RATE_LIMITED`.
 - Timeout Gemini 55 detik → `504 TIMEOUT`.
+- **`/generate-recipe-image`** memakai Workers AI
+  (`@cf/black-forest-labs/flux-1-schnell`, 4 langkah) lewat binding `ai` di
+  `wrangler.jsonc`; tidak perlu API key. Jatah paket Free 10.000 neuron per
+  hari dipakai bersama semua pengguna; bila habis → `429 RATE_LIMITED`.
+  Timeout 45 detik → `504 TIMEOUT`. `wrangler dev` menjalankan Workers AI di
+  akun Cloudflare, jadi tes lokal juga memakai jatah tersebut.
 - Bila model utama sibuk (`503 high demand`) Worker menunggu 1,5 detik dan
   mencoba sekali lagi, lalu pindah ke model di `vars.GEMINI_FALLBACK_MODELS`
   (dipisah koma). `429` langsung pindah model; nama model yang tidak ada

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,8 @@ import '../../scanner/application/scanner_providers.dart'
     show idTokenSourceProvider;
 import '../../scanner/data/ai_client.dart';
 import '../data/recipe_ai_client.dart';
+import '../data/recipe_image_client.dart';
+import '../data/recipe_image_store.dart';
 import '../data/recipe_store.dart';
 import '../domain/recipe.dart';
 import '../domain/recipe_policy.dart';
@@ -32,7 +35,9 @@ class RecipeActionException implements Exception {
   String toString() => 'RecipeActionException($failure)';
 }
 
-final recipeClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+final recipeClockProvider = Provider<DateTime Function()>(
+  (ref) => DateTime.now,
+);
 
 /// Mock mode uses a fixed id; otherwise the signed-in user (or `null`).
 final recipeUserIdProvider = Provider<String?>((ref) {
@@ -64,6 +69,38 @@ final recipeAiClientProvider = Provider<RecipeAiClient>((ref) {
     idToken: ref.watch(idTokenSourceProvider),
   );
 });
+
+final recipeImageStoreProvider = Provider<RecipeImageStore>((ref) {
+  return RecipeImageStore(
+    client: AppConfig.useMock
+        ? null
+        : HttpRecipeImageClient(
+            baseUrl: AppConfig.aiProxyUrl,
+            idToken: ref.watch(idTokenSourceProvider),
+          ),
+  );
+});
+
+/// What the image of [recipe] is drawn from: names only, no amounts.
+RecipeImageQuery imageQueryFor(Recipe recipe) => (
+  recipeId: recipe.recipeId,
+  name: recipe.name,
+  cuisine: recipe.cuisine,
+  ingredients: recipe.allIngredients
+      .map(ingredientTagLabel)
+      .where((label) => label.isNotEmpty)
+      .take(8)
+      .join(', '),
+);
+
+/// Image of a recipe, or `null` when none is available (PRD §6.3). Asked again
+/// after the connection returns.
+final recipeImageProvider = FutureProvider.autoDispose
+    .family<File?, RecipeImageQuery>(
+      (ref, query) => ref
+          .watch(recipeImageStoreProvider)
+          .load(query, online: ref.watch(onlineStatusProvider)),
+    );
 
 /// `true` when [id] can be used as a Firestore document id and cache key.
 bool isSafeRecipeId(String id) => RegExp(r'^[A-Za-z0-9_-]{1,64}$').hasMatch(id);

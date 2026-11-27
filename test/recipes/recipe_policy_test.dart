@@ -205,6 +205,40 @@ void main() {
     });
   });
 
+  test('steps lose their own numbering, the screen numbers them', () {
+    final recipe = Recipe.tryParse({
+      'recipeId': 'r_1',
+      'name': 'Soup',
+      'description': 'Warm soup.',
+      'cuisine': 'Western',
+      'cookingTechnique': 'Boil',
+      'cookingTimeMinutes': 20,
+      'ingredientsAvailable': ['1 carrot'],
+      'ingredientsMissing': <String>[],
+      'equipment': ['Pot'],
+      'steps': [
+        '1. Wash the carrot.',
+        '2) Slice it.',
+        '(3) Boil water.',
+        'Step 4: Add the carrot.',
+        '5.Season to taste.',
+        '6. ',
+        '1.5 liters of stock is enough.',
+        '10 minutes later, serve.',
+      ],
+    }, now: DateTime.utc(2026, 11, 27))!;
+
+    expect(recipe.steps, [
+      'Wash the carrot.',
+      'Slice it.',
+      'Boil water.',
+      'Add the carrot.',
+      'Season to taste.',
+      '1.5 liters of stock is enough.',
+      '10 minutes later, serve.',
+    ]);
+  });
+
   test('illustrationKeyFor uses the cuisine, never a URL', () {
     expect(illustrationKeyFor('Japanese'), 'recipe_japanese');
     expect(illustrationKeyFor('Martian'), 'recipe_general');

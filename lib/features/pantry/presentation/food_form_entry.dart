@@ -13,26 +13,20 @@ class FoodFormEntry {
   FoodFormEntry({
     required this.name,
     required String category,
-    required StorageLocation location,
+    required this._location,
     required this.purchaseDate,
     this.estimate,
     this.quantityText = '',
-    this.visualCondition,
+    String? visualCondition,
     this.aiNote,
     this.confidence,
     this.photoBytes,
     this.photoFile,
     int? shelfLifeDays,
     this.manualShelfLife = false,
-  }) : category = normalizeCategory(category),
-       _location = location {
-    _shelfLifeDays =
-        shelfLifeDays ??
-        resolveShelfLifeDays(
-          location: location,
-          estimate: estimate,
-          category: this.category,
-        );
+  }) : conditionText = visualCondition ?? '',
+       _category = normalizeCategory(category) {
+    _shelfLifeDays = shelfLifeDays ?? _defaultShelfLifeDays;
   }
 
   /// Entry for editing a saved item. The per-location AI estimate is not
@@ -52,11 +46,13 @@ class FoodFormEntry {
   }
 
   String name;
-  String category;
   DateTime purchaseDate;
   String quantityText;
   final ShelfLifeEstimate? estimate;
-  final String? visualCondition;
+
+  /// "Condition" field: how the food looks. Filled by the scan when the AI
+  /// describes it, and correctable before saving (PRD §3.3).
+  String conditionText;
   final String? aiNote;
   final double? confidence;
   final Uint8List? photoBytes;
@@ -65,6 +61,10 @@ class FoodFormEntry {
   File? photoFile;
   bool manualShelfLife;
 
+  /// Add mode: already written to the pantry, so it must not be saved again.
+  bool isSaved = false;
+
+  String _category;
   StorageLocation _location;
   late int _shelfLifeDays;
 
@@ -87,6 +87,25 @@ class FoodFormEntry {
       );
     }
   }
+
+  String get category => _category;
+
+  /// The catalog estimate depends on the category (PRD §3.3 rule 3), so a
+  /// correction updates it. Only a value that is still the default changes:
+  /// a manual estimate, or a different one saved with the item, is kept.
+  set category(String value) {
+    final wasDefault = _shelfLifeDays == _defaultShelfLifeDays;
+    _category = value;
+    if (!manualShelfLife && wasDefault) {
+      _shelfLifeDays = _defaultShelfLifeDays;
+    }
+  }
+
+  int get _defaultShelfLifeDays => resolveShelfLifeDays(
+    location: _location,
+    estimate: estimate,
+    category: _category,
+  );
 
   int get shelfLifeDays => _shelfLifeDays;
 
@@ -128,7 +147,9 @@ class FoodFormEntry {
       storageLocation: _location,
       purchaseDate: dateOnly(purchaseDate),
       shelfLifeDays: _shelfLifeDays,
-      visualCondition: visualCondition,
+      visualCondition: conditionText.trim().isEmpty
+          ? null
+          : conditionText.trim(),
       aiNote: aiNote,
       hasPhoto: photoBytes != null,
     );

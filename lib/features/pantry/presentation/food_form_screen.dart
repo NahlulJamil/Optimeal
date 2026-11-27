@@ -44,7 +44,12 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
   void initState() {
     super.initState();
     // In add mode the caller's list is shared on purpose: entries removed here
-    // are also gone when the user goes back to the scanner.
+    // are also gone when the user goes back to the scanner. Entries saved after
+    // the user left an earlier form are dropped so they are not added twice.
+    // (Checked first because edit mode passes a const list.)
+    if (widget.entries.any((e) => e.isSaved)) {
+      widget.entries.removeWhere((e) => e.isSaved);
+    }
     _entries = widget.isEdit
         ? [FoodFormEntry.fromItem(widget.item!)]
         : (widget.entries.isEmpty ? <FoodFormEntry>[] : widget.entries);
@@ -70,6 +75,8 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
   FoodFormEntry get _current => _entries[_selected];
 
   Future<void> _removeEntry(int index) async {
+    // The list must not change under a save in progress.
+    if (_saving) return;
     if (widget.isEdit) {
       await _deleteItem();
       return;
@@ -144,23 +151,25 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
       _error = null;
     });
     final controller = ref.read(pantryControllerProvider.notifier);
+    final batch = List.of(_entries);
     try {
       if (widget.isEdit) {
         await controller.edit(_current.applyTo(widget.item!));
         if (mounted) Navigator.of(context).pop();
         return;
       }
-      for (final e in _entries) {
+      for (final e in batch) {
         await controller.add(e.toDraft(), photo: e.photoBytes);
+        e.isSaved = true;
       }
       if (!mounted) return;
-      final count = _entries.length;
+      final count = batch.length;
       Navigator.of(context).popUntil((r) => r.isFirst);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             count == 1
-                ? '${_entries.first.name.trim()} added to your pantry'
+                ? '${batch.first.name.trim()} added to your pantry'
                 : '$count foods added to your pantry',
           ),
         ),
@@ -169,11 +178,21 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
       if (mounted) {
         setState(() {
           _saving = false;
+          // Only what is still unsaved stays, so "try again" cannot add the
+          // same food twice. The one that failed is now first.
+          final saved = batch.where((e) => e.isSaved).length;
+          if (saved > 0) {
+            _entries.removeWhere((e) => e.isSaved);
+            _selected = 0;
+          }
           // A connection lost mid-save gets the same explanation as the
           // disabled buttons instead of a generic retry (PRD §7.5).
-          _error = isOfflineError(error)
+          final reason = isOfflineError(error)
               ? offlineActionMessage
               : 'Could not save. Please try again.';
+          _error = saved > 0
+              ? '$saved of ${batch.length} foods saved. $reason'
+              : reason;
         });
       }
     }
@@ -227,6 +246,9 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
                             key: ObjectKey(_current),
                             entry: _current,
                             canRemove: !widget.isEdit || canWrite,
+                            // The condition describes the scan; it is not
+                            // editable once saved (PRD §3.4).
+                            showCondition: !widget.isEdit,
                             onRemove: () => _removeEntry(_selected),
                             onChanged: () => setState(() => _error = null),
                           ),
@@ -502,12 +524,14 @@ class _FormCard extends StatefulWidget {
     super.key,
     required this.entry,
     required this.canRemove,
+    required this.showCondition,
     required this.onRemove,
     required this.onChanged,
   });
 
   final FoodFormEntry entry;
   final bool canRemove;
+  final bool showCondition;
   final VoidCallback onRemove;
   final VoidCallback onChanged;
 
@@ -522,6 +546,9 @@ class _FormCardState extends State<_FormCard> {
   late final TextEditingController _qty = TextEditingController(
     text: widget.entry.quantityText,
   );
+  late final TextEditingController _condition = TextEditingController(
+    text: widget.entry.conditionText,
+  );
 
   FoodFormEntry get e => widget.entry;
 
@@ -529,6 +556,7 @@ class _FormCardState extends State<_FormCard> {
   void dispose() {
     _name.dispose();
     _qty.dispose();
+    _condition.dispose();
     super.dispose();
   }
 
@@ -697,6 +725,31 @@ class _FormCardState extends State<_FormCard> {
             text: formatDisplayDate(e.estimatedEndDate),
             onTap: _pickEndDate,
           ),
+          if (widget.showCondition) ...[
+            const SizedBox(height: 16),
+            const _Label('Condition'),
+            TextField(
+              controller: _condition,
+              minLines: 2,
+              maxLines: 4,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: _fieldDecoration(
+                hint: 'e.g. Skin is firm, color still bright',
+              ),
+              onChanged: (v) => _update(() => e.conditionText = v),
+            ),
+            if (e.aiNote case final note? when note.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  'AI note: $note',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+          ],
         ],
       ),
     );

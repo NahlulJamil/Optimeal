@@ -230,7 +230,8 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                 ? const StateMessage(
                     icon: Icons.favorite_border,
                     title: 'No favorite recipes yet',
-                    message: 'Tap the heart on a recipe to keep it here, '
+                    message:
+                        'Tap the heart on a recipe to keep it here, '
                         'even when you are offline.',
                   )
                 : StateMessage(
@@ -290,7 +291,10 @@ class _FilterRow extends ConsumerWidget {
             label: 'Cuisine',
             child: _Dropdown<String?>(
               value: filter.cuisine,
-              items: {null: 'Any cuisine', for (final c in recipeCuisines) c: c},
+              items: {
+                null: 'Any cuisine',
+                for (final c in recipeCuisines) c: c,
+              },
               onChanged: notifier.setCuisine,
             ),
           ),

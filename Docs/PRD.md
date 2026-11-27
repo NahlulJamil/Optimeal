@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.14
+**Versi:** 1.17
 
 **Platform:** Mobile Application (Android)
 
@@ -12,7 +12,7 @@
 
 **Terakhir diperbarui:** 27 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Versi 1.13 menetapkan **implementasi halaman Profile** dari frame Figma "profile", **perilaku foto profil** tanpa Cloud Storage, dan **pembersihan data lokal saat logout**. Versi 1.14 menambahkan **toggle Notifications langsung di Profile Hub** serta **sub-screen Profile Details, Password, Support, dan About**. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Versi 1.13 menetapkan **implementasi halaman Profile** dari frame Figma "profile", **perilaku foto profil** tanpa Cloud Storage, dan **pembersihan data lokal saat logout**. Versi 1.14 mengganti ilustrasi statis resep dengan **foto makanan dari internet (Wikimedia Commons)** yang disimpan di perangkat. Versi 1.15 menambahkan field **Condition** pada form *Add Food*. Versi 1.16 mengganti foto Wikimedia Commons dengan **gambar resep buatan AI** (Cloudflare Workers AI) agar sesuai dengan masakannya. Versi 1.17 menambahkan **toggle Notifications langsung di Profile Hub** serta **sub-screen Profile Details, Password, Support, dan About**. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -83,7 +83,7 @@ Optimeal memiliki empat fitur utama:
 11. Panggilan ke layanan AI dilakukan melalui **proxy serverless Cloudflare Workers free plan (tanpa kartu)**. API key AI disimpan sebagai secret di sisi proxy dan tidak pernah ada di aplikasi client.
 12. Seluruh layanan yang digunakan wajib berada pada free tier yang **tidak memerlukan billing account**. Tidak ada layanan yang berpotensi menagih pengembang.
 13. Resep favorit disimpan sebagai salinan lengkap (snapshot) agar dapat dibaca saat offline.
-14. Gambar resep menggunakan ilustrasi statis yang dibundel di dalam aplikasi, bukan gambar yang dihasilkan AI dan bukan URL dari internet.
+14. Gambar resep **dibuat oleh AI** (Cloudflare Workers AI) dari nama dan bahan resep, disimpan di perangkat, dan diberi keterangan buatan AI (lihat 6.3). Bila gambar belum tersedia, aplikasi menampilkan ikon cadangan.
 15. Food Scanner memiliki dua mode: **Scan Food** (kamera/galeri) dan **Barcode** (barcode kemasan produk). Keduanya memerlukan koneksi internet.
 16. Aplikasi hanya memakai **tema terang (Light Mode)** dan antarmuka hanya berbahasa **English**. Tidak ada pengaturan tema atau bahasa di dalam aplikasi.
 17. **Desain UI mengikuti file Figma "Balomba"** (page *HiFi Optimeal*) sebagai acuan visual tunggal, sesuai Bagian 13.2 butir 2. File Figma bersifat **hanya-baca** dan tidak boleh diubah oleh AI (Bagian 13.2 butir 4).
@@ -154,7 +154,7 @@ Halaman utama menjadi pusat navigasi untuk mengakses fitur-fitur Optimeal.
 - Menampilkan **kartu ringkasan** berisi jumlah bahan per lokasi penyimpanan: **Pantry**, **Fridge**, dan **Freezer**.
 - Menampilkan **banner peringatan** berisi jumlah bahan yang mendekati batas estimasi masa simpan beserta ajakan memakai resep.
 - Menampilkan bagian **Pantry** berisi maksimal **3 bahan** dengan sisa hari paling sedikit, diurutkan dari yang paling mendekati akhir masa simpan, serta tautan **"View All"** menuju Pantry.
-- Menampilkan bagian **AI Recipe Recommendations** berisi maksimal **1 kartu resep** (ilustrasi, nama, deskripsi singkat, tag bahan, waktu masak) serta tautan **"View All"** menuju Recipe Finder.
+- Menampilkan bagian **AI Recipe Recommendations** berisi maksimal **1 kartu resep** (foto, nama, deskripsi singkat, tag bahan, waktu masak) serta tautan **"View All"** menuju Recipe Finder.
 - Menyediakan akses fitur melalui **bottom navigation**: Home, Pantry, Add (scan/tambah), Recipes, dan Profile.
 - Menampilkan indikator "Mode Offline" apabila perangkat tidak terhubung ke internet.
 - Menampilkan state loading, empty, dan error pada setiap bagian.
@@ -221,6 +221,7 @@ Food Scanner digunakan untuk mengenali bahan makanan melalui gambar menggunakan 
 | Tanggal pembelian | ✅ | Pengguna | Default: hari ini. |
 | Estimasi masa simpan (hari) | — | Sistem (dapat diubah pengguna) | Ditampilkan otomatis berdasarkan lokasi penyimpanan yang dipilih; dapat diubah pada form hasil scan dan Edit food details. |
 | Tanggal estimasi akhir masa simpan | — | Sistem | Dihitung otomatis: tanggal pembelian + estimasi masa simpan. |
+| Kondisi bahan (**Condition**) | ❌ | AI, dapat dikoreksi | Penjelasan kondisi bahan pada form *Add Food*. Terisi otomatis dari kondisi visual hasil scan; kosong untuk barcode atau isian manual. Tidak diubah lewat Edit food details. |
 | Catatan AI | — | AI | Opsional, ditampilkan sebagai informasi. |
 | Foto bahan | — | Pengguna | Disimpan lokal di perangkat. |
 
@@ -325,7 +326,7 @@ Filter ini menentukan **bahan mana** yang ikut dikirim ke AI, bukan atribut rese
 **Informasi pada detail resep:**
 
 - Nama resep.
-- Ilustrasi masakan (asset lokal bawaan aplikasi, lihat 6.3).
+- Gambar masakan buatan AI beserta keterangannya (lihat 6.3).
 - Deskripsi singkat.
 - Cooking time (estimasi).
 - Cuisine (gaya memasak per negara/daerah).
@@ -364,7 +365,7 @@ Smart Notification digunakan untuk memberikan pengingat kepada pengguna mengenai
 - Sistem mengirimkan notifikasi lokal kepada pengguna.
 - Notifikasi menampilkan informasi nama bahan makanan dan pengingat untuk segera mengolah atau memeriksa kondisinya.
 - Pengguna dapat membuka detail bahan makanan melalui notifikasi (deep link ke halaman detail Pantry).
-- Pengguna dapat mengatur preferensi notifikasi: aktif/nonaktif dan ambang pengingat (default **1 hari** sebelum estimasi akhir masa simpan; pilihan 1–3 hari).
+- Pengguna dapat mengatur preferensi notifikasi aktif/nonaktif. Ambang pengingat memakai nilai bawaan **1 hari** sebelum estimasi akhir masa simpan dan tidak memiliki kontrol UI.
 - Notifikasi dijadwalkan ulang setiap kali data Pantry berubah, aplikasi dibuka, atau preferensi diubah.
 - Notifikasi tetap muncul saat offline karena dijadwalkan secara lokal pada perangkat.
 - Sistem juga menampilkan banner pengingat di halaman Home sebagai pelengkap.
@@ -428,6 +429,7 @@ Fitur pendukung yang memungkinkan pengguna menyimpan resep pilihan dan membukany
 - Pengguna dapat menghapus resep dari favorit.
 - Pengguna dapat melihat daftar resep favorit pada tab **Favorit** di halaman Recipe Finder.
 - Sistem menyimpan **salinan lengkap (snapshot)** data resep ke penyimpanan lokal perangkat, sehingga resep favorit dapat dibuka tanpa koneksi internet.
+- Gambar resep yang sudah pernah dibuat tersimpan di perangkat dan ikut tampil saat offline; yang belum ada menampilkan ikon cadangan.
 - Daftar favorit juga disinkronkan ke backend agar tersedia pada perangkat lain dan tetap ada setelah login ulang.
 - Saat offline, daftar dan detail favorit dapat dibuka; penambahan/penghapusan favorit dinonaktifkan.
 - Pengguna dapat menghapus favorit dari halaman detail favorit saat online.
@@ -583,6 +585,11 @@ Penggunaan AI meliputi:
 - Menghasilkan rekomendasi resep berdasarkan persediaan bahan makanan, filter lokasi penyimpanan, dan cuisine.
 - Menghasilkan informasi bahan, peralatan, teknik memasak, dan langkah memasak.
 
+**Cloudflare Workers AI (free plan)**
+
+- Model `@cf/black-forest-labs/flux-1-schnell` membuat **gambar resep** dari nama, cuisine, dan bahan resep.
+- Dipanggil dari Worker yang sama melalui binding AI, tanpa API key tambahan.
+
 **Proxy Cloudflare Workers:**
 
 - Berjalan pada **free plan** (tanpa kartu kredit/rekening).
@@ -609,6 +616,7 @@ Digunakan untuk menghubungkan aplikasi Flutter dengan layanan AI. Kontrak endpoi
 | `POST /analyze-food` | Identifikasi bahan makanan dari gambar. |
 | `POST /analyze-barcode` | Identifikasi produk kemasan dari nilai barcode. |
 | `POST /generate-recipes` | Menghasilkan rekomendasi resep. |
+| `POST /generate-recipe-image` | Membuat gambar satu resep (Workers AI). |
 
 **REST API / HTTP**
 
@@ -620,7 +628,7 @@ Digunakan untuk komunikasi dengan endpoint proxy di atas dan Firebase SDK.
 - **Snapshot Pantry** disimpan di penyimpanan lokal agar daftar bahan selalu dapat ditampilkan saat offline.
 - **Foto bahan** disimpan sebagai file di direktori aplikasi pada perangkat, dengan pemetaan `foodId → path` di database lokal.
 - **Snapshot resep favorit** disimpan lengkap di penyimpanan lokal agar dapat dibuka tanpa koneksi (lihat 3.8).
-- **Ilustrasi resep** dibundel sebagai asset aplikasi sehingga tetap tampil saat offline.
+- **Gambar resep** disimpan sebagai file di perangkat setelah pertama kali dibuat, sehingga tetap tampil saat offline.
 - Sinkronisasi dilakukan otomatis saat koneksi kembali tersedia; status sinkronisasi ditampilkan kepada pengguna.
 
 ##   Model Biaya & Batasan Free Tier
@@ -633,6 +641,7 @@ Seluruh layanan yang dipakai **gratis dan tidak memerlukan kartu kredit/rekening
 | Cloud Firestore | Spark | 1 GiB data, 50.000 read/hari, 20.000 write/hari | Tidak | Tidak |
 | Cloudflare Workers | Free | 100.000 request/hari | Tidak | Tidak |
 | Google Gemini API | Free tier | Dibatasi rate limit per model | Tidak | Tidak |
+| Cloudflare Workers AI (gambar resep) | Free | 10.000 neuron/hari, dipakai bersama semua pengguna; bila habis permintaan gagal | Tidak | Tidak |
 
 **Catatan penting:**
 
@@ -670,7 +679,7 @@ Informasi yang disimpan:
 | `purchaseDate` | Timestamp | Pengguna | Tanggal pembelian. Dapat diubah setelah tersimpan. |
 | `shelfLifeDays` | Number | Sistem / Pengguna | Estimasi masa simpan (hari) sesuai lokasi penyimpanan. Dapat diubah pengguna melalui Edit food details. |
 | `estimatedEndDate` | Timestamp | Sistem | `purchaseDate + shelfLifeDays`; dihitung ulang bila `purchaseDate` berubah. |
-| `visualCondition` | String | AI | Ringkasan bentuk, warna, karakteristik. |
+| `visualCondition` | String | AI / Pengguna | Ringkasan bentuk, warna, karakteristik. Dapat dikoreksi sebelum disimpan. |
 | `aiNote` | String? | AI | Catatan kondisi opsional (mis. "warnanya sudah menguning"). |
 | `hasPhoto` | Boolean | Sistem | Menandai apakah perangkat memiliki foto lokal untuk bahan ini. |
 | `createdAt` | Timestamp | Sistem | Waktu dibuat. |
@@ -685,7 +694,7 @@ Informasi yang disimpan:
 | `recipeId` | String | ID unik resep. |
 | `name` | String | Nama resep. |
 | `description` | String | Deskripsi singkat. |
-| `illustrationKey` | String | Kunci asset ilustrasi lokal (lihat catatan di bawah). |
+| `illustrationKey` | String | Kunci ikon cadangan saat foto belum tersedia (lihat catatan di bawah). |
 | `cuisine` | String | Gaya masakan per negara/daerah (mis. Indonesia, Italia). |
 | `cookingTechnique` | String | Teknik memasak (mis. tumis, kukus, goreng). |
 | `cookingTimeMinutes` | Number | Estimasi waktu memasak. |
@@ -696,7 +705,13 @@ Informasi yang disimpan:
 | `generatedAt` | Timestamp | Waktu resep dihasilkan. |
 | `lastAccessedAt` | Timestamp | Dipakai untuk kebijakan cache (10 resep/pengguna). |
 
-**Catatan ilustrasi resep:** AI berbasis teks tidak menghasilkan gambar. Aplikasi membundel ±15 ilustrasi lokal dan memilih berdasarkan `cuisine`/kategori masakan. Ilustrasi berbentuk asset aplikasi, sehingga **tetap tampil saat offline**. Pengambilan gambar dari internet (termasuk URL stok foto) tidak digunakan karena berisiko lisensi, tautan mati, dan gagal tampil saat offline.
+**Catatan gambar resep (v1.16):** gambar dibuat oleh **Cloudflare Workers AI** melalui `POST /generate-recipe-image`, agar sesuai dengan masakan pada resep (free plan, tanpa API key tambahan dan tanpa billing account).
+
+1. Yang dikirim hanya nama resep, cuisine, dan nama bahan. Tidak ada data pengguna yang disertakan.
+2. Satu resep dibuatkan satu gambar saat pertama kali ditampilkan secara online, lalu disimpan di perangkat. Gambar tidak disimpan di Firestore dan tidak menambah field pada model `Recipe`.
+3. Detail resep menampilkan keterangan bahwa gambar dibuat oleh AI dan hasil masakan bisa berbeda.
+4. Bila gambar belum tersedia (offline, kuota habis, atau gagal), tampil ikon cadangan berdasarkan `illustrationKey`.
+5. Permintaan yang gagal tidak diulang otomatis, karena setiap percobaan memakai kuota harian.
 
 ## 6.4 Notification Data
 
@@ -744,6 +759,7 @@ match /users/{uid}/{document=**} {
 foodPhotos/{foodId}        → path file foto bahan makanan
 pantrySnapshot             → salinan daftar bahan untuk mode offline
 favoriteSnapshots          → salinan lengkap resep favorit
+recipeImages/{recipeId}    → gambar resep buatan AI
 notificationSchedule       → metadata notifikasi yang dijadwalkan
 ```
 
@@ -795,7 +811,7 @@ Data lokal dihapus saat pengguna logout agar tidak tercampur antar akun pada per
 - Aplikasi dapat dibuka dan menampilkan Pantry dalam mode read-only saat offline.
 - Aplikasi menampilkan waktu sinkronisasi terakhir.
 - Fitur yang membutuhkan AI dan penulisan data dinonaktifkan saat offline dengan pesan yang jelas.
-- Resep favorit dapat dibuka dari snapshot lokal, termasuk ilustrasinya.
+- Resep favorit dapat dibuka dari snapshot lokal, termasuk foto yang sudah pernah dimuat.
 - Foto bahan tetap tampil karena tersimpan lokal.
 - Notifikasi masa simpan tetap berjalan karena dijadwalkan secara lokal.
 - Setelah koneksi pulih, aplikasi menyinkronkan data dan mengaktifkan kembali seluruh fitur.
@@ -848,7 +864,7 @@ Hal-hal berikut tidak termasuk dalam ruang lingkup pengembangan versi awal (MVP)
 - Pemindaian banyak bahan makanan sekaligus dalam satu gambar.
 - Pemindaian real-time melalui stream video kamera.
 - Pemindaian atau pembuatan resep saat offline.
-- Pembuatan gambar masakan menggunakan model image-generation (gambar resep menggunakan ilustrasi statis).
+- Pembuatan gambar selain gambar resep (mis. gambar bahan makanan atau foto profil).
 - Sinkronisasi foto bahan antarperangkat (foto hanya tersimpan lokal).
 - Chat/interaksi percakapan dengan AI.
 - Penggunaan layanan Firebase berbayar (Blaze), Cloud Storage, Cloud Functions, atau FCM.
@@ -882,7 +898,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | TTL cache resep | 7 hari | Dihapus bila tidak diakses. |
 | Batas generate resep | 10/jam, 30/hari per pengguna | Melindungi kuota free tier AI. |
 | Batas resep favorit | 50/pengguna | Menjaga ukuran penyimpanan lokal. |
-| Ambang notifikasi default | 1 hari | Dapat diubah 1–3 hari. |
+| Ambang notifikasi | 1 hari | Nilai bawaan; tidak ada kontrol UI. |
 | Jumlah notifikasi per bahan | 2 | H-ambang dan H-0. |
 | Batas notifikasi per jadwal | 3 individual + 1 ringkasan | Mencegah spam. |
 | Retry pemanggilan AI | Maksimal 2 kali | Setelah itu tampilkan error. |
@@ -1000,6 +1016,24 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 
 ### v1.13 → v1.14
 
+1. **Gambar resep memakai foto dari internet** (Wikimedia Commons), menggantikan ilustrasi statis yang dibundel. Ini mencabut butir 7 pada changelog v1.2. Alasannya: pengguna perlu melihat foto makanan seperti pada desain Figma, dan foto bundel belum tersedia.
+2. **Foto disimpan di perangkat** agar tampil saat offline setelah pernah dimuat, dan dihapus saat logout.
+3. **Kredit foto wajib ditampilkan** pada detail resep sesuai lisensi Wikimedia Commons.
+4. **Ikon cadangan** berdasarkan `illustrationKey` tetap dipakai bila foto tidak tersedia. Model data dan kontrak endpoint tidak berubah.
+
+### v1.14 → v1.15
+
+1. **Field Condition ditambahkan pada form *Add Food*** (hasil scan maupun isian manual), setelah Shelf Life Estimate. Isinya memakai field `visualCondition` yang sudah ada, sehingga model data dan kontrak endpoint tidak berubah.
+
+### v1.15 → v1.16
+
+1. **Gambar resep dibuat oleh AI** (Cloudflare Workers AI), menggantikan pencarian foto Wikimedia Commons pada v1.14. Alasannya: foto hasil pencarian sering tidak sesuai dengan masakan pada resep.
+2. **Endpoint `POST /generate-recipe-image` ditambahkan** pada Worker. Model data tidak berubah.
+3. **Larangan gambar buatan AI dicabut khusus untuk gambar resep** (butir 14 pada 2.3, Bagian 9, dan 13.3).
+4. **Keterangan buatan AI wajib tampil** pada detail resep.
+
+### v1.16 → v1.17
+
 1. **Toggle Notifications langsung di Profile Hub:** sesuai desain Figma terbaru, baris **Notifications** memakai switch on/off langsung (menyimpan `notificationsEnabled` ke `users/{uid}` dan menyinkronkan `NotificationPlanner` lokal). Perubahan tetap terkunci saat offline. Ambang hari tidak memiliki kontrol UI dan memakai nilai bawaan `1`.
 2. **Sub-screen Profile diimplementasikan:** **Profile Details** (Display Name, Full Name, Email read-only, Telephone `+62`, Save, Logout), **Change Your Password** (validasi ≥ 8 karakter, ≥ 1 huruf kapital, ≥ 1 angka, re-autentikasi bila diminta Firebase), **Support** (*Contact support* membuka tautan Instagram dukungan), dan **About** (deskripsi dan ringkasan fitur Optimeal), dengan bottom navigation bar tetap tampil.
 
@@ -1010,7 +1044,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 | Backend | Firebase Spark (Auth + Firestore) | Gratis, tanpa kartu, dan plan Spark tidak dapat menagih. |
 | Proxy AI | Cloudflare Workers free plan | Cloud Functions mewajibkan Blaze (butuh kartu). Workers gratis, tanpa kartu, dan mendukung secret. |
 | Penyimpanan foto | Lokal di perangkat | Menghilangkan layanan berbayar/berisiko, mempercepat akses, dan otomatis tersedia saat offline. |
-| Gambar resep | Ilustrasi asset lokal | Gratis, konsisten, tidak melanggar lisensi, dan tetap tampil saat offline. |
+| Gambar resep | Buatan AI lewat Cloudflare Workers AI, disimpan di perangkat (v1.16) | Gambar mengikuti nama dan bahan resep; memakai Worker yang sudah ada tanpa biaya atau key baru; gambar yang sudah dibuat tampil saat offline. |
 | Sumber estimasi masa simpan | AI memberi estimasi untuk tiga lokasi penyimpanan; sistem memilih sesuai lokasi yang dipilih pengguna, dengan katalog cadangan | Estimasi bergantung pada lokasi penyimpanan. Katalog cadangan mencegah kegagalan saat AI tidak memberi nilai. |
 | Cuisine | Gaya memasak per negara/daerah | Makna standar "cuisine" dan paling andal dihasilkan AI. Teknik memasak menjadi field terpisah. |
 | Notifikasi | Lokal terjadwal | Tidak memerlukan server push, tetap berfungsi offline, dan tidak menambah biaya. |
@@ -1047,7 +1081,11 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 10. **Aksi hapus resep** menghapus data dari cache dan favorit; perlu dialog konfirmasi agar tidak menghapus favorit pengguna secara tidak sengaja.
 11. **Baris status sinkronisasi belum ada di Figma.** Frame Pantry tidak memiliki slot untuk waktu sinkronisasi terakhir yang diwajibkan Bagian 7.5. Penempatan saat ini (di bawah chip lokasi) adalah keputusan implementasi; tim perlu menambahkan elemen ini ke Figma atau menyetujui penempatannya secara resmi.
 12. **Logout sudah diimplementasikan** dan membersihkan data lokal: foto (`PhotoStore.clear`), favorit dan kuota resep (`LocalRecipeStore.clear`), serta waktu sinkronisasi terakhir (`SyncStatusController.clear`). Pembersihan berjalan best-effort agar kegagalan salah satu langkah tidak menahan logout.
-13. **Ambang hari notifikasi tidak dapat diubah pengguna.** Baris **Notifications** di Profile hanya menyalakan atau mematikan pengingat; tidak ada kontrol UI untuk ambang hari. Nilai `notificationThresholdDays` memakai default `1` dan dibaca oleh `NotificationPlanner`. Keputusan ini diambil agar sesuai dengan desain Profile yang hanya menampilkan switch on/off.
+13. **Kualitas gambar resep perlu diuji.** Gambar buatan AI dapat menampilkan bahan yang tidak ada pada resep.
+14. **Kuota gambar dipakai bersama.** Perkiraan 65–173 gambar 1024×1024 (4 langkah) per hari, bergantung cara biaya per langkah dihitung; siapkan gambar sebelum demo.
+15. **Gambar tidak tersinkron antarperangkat**; perangkat lain membuat gambarnya sendiri dan memakai kuota lagi.
+16. **Field Condition belum ada di Figma.** Frame *Food Details* perlu ditambahi elemen ini oleh tim.
+17. **Ambang hari notifikasi tidak dapat diubah pengguna.** Baris **Notifications** di Profile hanya menyalakan atau mematikan pengingat; tidak ada kontrol UI untuk ambang hari. Nilai `notificationThresholdDays` memakai default `1` dan dibaca oleh `NotificationPlanner`. Keputusan ini diambil agar sesuai dengan desain Profile yang hanya menampilkan switch on/off.
 
 ---
 
@@ -1098,7 +1136,7 @@ Aturan pada 13.2 berlaku konkret pada hal-hal berikut:
 
 **UI & copywriting**
 - Tidak mengganti istilah baku: "approaching shelf-life estimate" / "mendekati batas estimasi masa simpan", "Mode Offline", atau label lokasi `Pantry` / `Fridge` / `Freezer`.
-- Tidak membuat ilustrasi resep atau gambar makanan melalui model image-generation; aset tetap ilustrasi lokal yang dibundel.
+- Model image-generation hanya dipakai untuk gambar resep di dalam aplikasi sesuai 6.3; asisten AI pengembang tidak membuat aset gambar untuk repositori atau Figma.
 
 **Perilaku offline**
 - Tidak mengaktifkan fitur tulis, scan, atau generate resep saat offline.

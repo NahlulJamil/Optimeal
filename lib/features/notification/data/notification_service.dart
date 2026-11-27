@@ -23,6 +23,9 @@ abstract class NotificationService {
     NotificationSettings settings,
   );
 
+  /// Removes every reminder, pending or already shown (logout, PRD §6.7).
+  Future<void> cancelAll();
+
   /// Payload of the notification that launched the app, if any.
   Future<String?> launchPayload();
 }
@@ -36,6 +39,7 @@ class LocalNotificationService implements NotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
   final _taps = StreamController<String>.broadcast();
   Future<void>? _init;
+  Future<void> _queue = Future.value();
   bool _exactAllowed = false;
 
   @override
@@ -74,8 +78,28 @@ class LocalNotificationService implements NotificationService {
     }
   }
 
+  /// Runs schedule changes one at a time, so a [replaceAll] still in progress
+  /// cannot add reminders back after a later [cancelAll].
+  Future<void> _serialized(Future<void> Function() action) {
+    final result = _queue.then((_) => action());
+    // A failed change is reported to its caller but must not block the next.
+    _queue = result.then((_) {}, onError: (_) {});
+    return result;
+  }
+
+  @override
+  Future<void> cancelAll() => _serialized(() async {
+    await init();
+    await _plugin.cancelAll();
+  });
+
   @override
   Future<void> replaceAll(
+    List<PlannedNotification> plan,
+    NotificationSettings settings,
+  ) => _serialized(() => _schedule(plan, settings));
+
+  Future<void> _schedule(
     List<PlannedNotification> plan,
     NotificationSettings settings,
   ) async {
