@@ -69,6 +69,18 @@ class AuthController extends AsyncNotifier<void> {
     return _run(() => _repo.sendPasswordReset(email));
   }
 
+  Future<bool> changePassword({
+    required String newPassword,
+    String? currentPassword,
+  }) {
+    return _run(
+      () => _repo.changePassword(
+        newPassword: newPassword,
+        currentPassword: currentPassword,
+      ),
+    );
+  }
+
   /// `true` bila email sudah terverifikasi.
   Future<bool> checkEmailVerified() async {
     try {

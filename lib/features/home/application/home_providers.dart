@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/food_item.dart';
 import '../../auth/application/auth_providers.dart';
 import '../../pantry/application/pantry_providers.dart';
+import '../../profile/application/profile_providers.dart';
 import '../../recipes/application/recipe_providers.dart';
 import '../../recipes/domain/recipe.dart';
 
@@ -71,7 +72,9 @@ final homeRecipeProvider = Provider<AsyncValue<Recipe?>>((ref) {
 /// "Sarah's Kitchen" from the account name (PRD §3.2). Falls back to
 /// "My Kitchen" while the session is loading or when no name was saved.
 final kitchenNameProvider = Provider<String>((ref) {
-  final name = ref.watch(authStateProvider).value?.displayName?.trim() ?? '';
+  final profileName = ref.watch(profileUserProvider)?.name.trim() ?? '';
+  final authName = ref.watch(authStateProvider).value?.displayName?.trim() ?? '';
+  final name = profileName.isNotEmpty ? profileName : authName;
   if (name.isEmpty) return 'My Kitchen';
   final firstName = name.split(RegExp(r'\s+')).first;
   return "$firstName's Kitchen";

@@ -2,15 +2,25 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/connectivity/offline_error.dart';
+import '../../../core/connectivity/online_status.dart';
+import '../../../core/connectivity/sync_status.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_widgets.dart';
+import '../../notification/application/notification_providers.dart';
 import '../application/logout.dart';
 import '../application/profile_providers.dart';
+import 'about_screen.dart';
+import 'change_password_screen.dart';
+import 'profile_details_screen.dart';
+import 'support_screen.dart';
+import 'widgets/profile_widgets.dart';
 
 /// Figma frame "profile" (433:838).
 ///
-/// Dark Mode and Language were removed from the product (PRD v1.11). The menu
-/// rows stay visual-only until each sub-screen is implemented; Logout is the
-/// only action that is wired.
+/// Dark Mode and Language were removed from the product (PRD v1.11).
+/// Notifications toggles reminders on/off inline; the other four rows push
+/// their sub-screens inside the Profile tab navigator.
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -20,6 +30,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _loggingOut = false;
+  bool _togglingNotifications = false;
 
   Future<void> _logout() async {
     if (_loggingOut) return;
@@ -31,9 +42,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  Future<void> _toggleNotifications(bool nextValue) async {
+    if (_togglingNotifications) return;
+    final blocked = ref.read(writeBlockedProvider);
+    if (blocked) {
+      _showMessage(offlineActionMessage);
+      return;
+    }
+    setState(() => _togglingNotifications = true);
+    try {
+      await ref
+          .read(profileControllerProvider.notifier)
+          .setNotificationsEnabled(nextValue);
+    } catch (error) {
+      _showMessage(
+        isOfflineError(error)
+            ? offlineActionMessage
+            : 'Could not update notification settings. Please try again.',
+      );
+    } finally {
+      if (mounted) setState(() => _togglingNotifications = false);
+    }
+  }
+
+  void _showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  void _push(Widget screen) {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(profileUserProvider);
+    final notificationsEnabled = ref
+        .watch(notificationSettingsProvider)
+        .enabled;
+    final canWrite = !ref.watch(writeBlockedProvider);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       // White status-bar icons over the green header.
       value: SystemUiOverlayStyle.light,
@@ -62,7 +112,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   ),
                 ),
-                Center(child: _Avatar(user: user)),
+                Center(child: ProfileAvatar(user: user)),
                 const SizedBox(height: 13),
                 Text(
                   user?.name ?? 'Optimeal user',
@@ -95,26 +145,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       color: AppColors.background,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
                         _MenuRow(
                           icon: Icons.person_outline,
                           label: 'Profile Details',
+                          onTap: () => _push(const ProfileDetailsScreen()),
                         ),
-                        SizedBox(height: 10),
-                        _MenuRow(icon: Icons.lock_outline, label: 'Password'),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         _MenuRow(
-                          icon: Icons.notifications_none,
-                          label: 'Notifications',
+                          icon: Icons.lock_outline,
+                          label: 'Password',
+                          onTap: () => _push(const ChangePasswordScreen()),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
+                        _NotificationToggleRow(
+                          enabled: notificationsEnabled,
+                          interactive: canWrite && !_togglingNotifications,
+                          onTap: () =>
+                              _toggleNotifications(!notificationsEnabled),
+                        ),
+                        if (!canWrite)
+                          const OfflineHint(
+                            'Changing notification settings needs an internet '
+                            'connection.',
+                          ),
+                        const SizedBox(height: 10),
                         _MenuRow(
                           icon: Icons.support_agent,
                           label: 'Support',
+                          onTap: () => _push(const SupportScreen()),
                         ),
-                        SizedBox(height: 10),
-                        _MenuRow(icon: Icons.info_outline, label: 'About'),
+                        const SizedBox(height: 10),
+                        _MenuRow(
+                          icon: Icons.info_outline,
+                          label: 'About',
+                          onTap: () => _push(const AboutScreen()),
+                        ),
                       ],
                     ),
                   ),
@@ -122,7 +189,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(height: 9),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _LogoutCard(onTap: _loggingOut ? null : _logout),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: LogoutRowButton(onTap: _loggingOut ? null : _logout),
+                  ),
                 ),
               ],
             ),
@@ -133,118 +210,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-class _Avatar extends StatelessWidget {
-  const _Avatar({required this.user});
-
-  final ProfileUser? user;
-
-  @override
-  Widget build(BuildContext context) {
-    final photoUrl = user?.photoUrl;
-    return Container(
-      width: 97,
-      height: 97,
-      clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        shape: BoxShape.circle,
-      ),
-      child: photoUrl == null
-          ? _Initials(name: user?.name)
-          : Image.network(
-              photoUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _Initials(name: user?.name),
-            ),
-    );
-  }
-}
-
-class _Initials extends StatelessWidget {
-  const _Initials({required this.name});
-
-  final String? name;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        _initials(name),
-        style: const TextStyle(
-          fontSize: 34,
-          fontWeight: FontWeight.w700,
-          color: AppColors.primary,
-        ),
-      ),
-    );
-  }
-
-  static String _initials(String? name) {
-    final words = (name ?? '')
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .toList();
-    if (words.isEmpty) return 'O';
-    return words.take(2).map((w) => w[0].toUpperCase()).join();
-  }
-}
-
 class _MenuRow extends StatelessWidget {
-  const _MenuRow({required this.icon, required this.label});
+  const _MenuRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   final IconData icon;
   final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    // No destination yet: the row is drawn exactly as in Figma without
-    // promising a screen that does not exist.
     return Container(
-      constraints: const BoxConstraints(minHeight: 40),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.menuRow,
         borderRadius: BorderRadius.circular(16),
         boxShadow: menuRowShadow,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 22, color: AppColors.textPrimary),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-          const Icon(
-            Icons.chevron_right,
-            size: 24,
-            color: AppColors.textPrimary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LogoutCard extends StatelessWidget {
-  const _LogoutCard({required this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(16),
       ),
       child: Material(
         color: Colors.transparent,
@@ -255,27 +238,131 @@ class _LogoutCard extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(minHeight: 40),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.logoutRow,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: menuRowShadow,
-            ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.logout, size: 23, color: AppColors.danger),
-                SizedBox(width: 18),
+                Icon(icon, size: 22, color: AppColors.textPrimary),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'Logout',
-                    style: TextStyle(
+                    label,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.danger,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
+                const Icon(
+                  Icons.chevron_right,
+                  size: 24,
+                  color: AppColors.textPrimary,
+                ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationToggleRow extends StatelessWidget {
+  const _NotificationToggleRow({
+    required this.enabled,
+    required this.interactive,
+    required this.onTap,
+  });
+
+  final bool enabled;
+  final bool interactive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      toggled: enabled,
+      button: true,
+      label: 'Notifications',
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.menuRow,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: menuRowShadow,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.notifications_none,
+                    size: 22,
+                    color: AppColors.textPrimary,
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Text(
+                      'Notifications',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Opacity(
+                    opacity: interactive ? 1 : 0.45,
+                    child: _PillToggle(
+                      key: const Key('profile-notifications-switch'),
+                      value: enabled,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact pill switch matching the Figma "profile" Notifications row.
+class _PillToggle extends StatelessWidget {
+  const _PillToggle({super.key, required this.value});
+
+  final bool value;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      width: 34,
+      height: 19,
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      decoration: BoxDecoration(
+        color: value ? AppColors.primary : Colors.transparent,
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(
+          color: value ? AppColors.primary : AppColors.textPrimary,
+          width: 1.6,
+        ),
+      ),
+      child: AnimatedAlign(
+        duration: const Duration(milliseconds: 160),
+        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: value ? AppColors.surface : AppColors.textPrimary,
+            shape: BoxShape.circle,
           ),
         ),
       ),
