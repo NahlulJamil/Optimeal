@@ -7,7 +7,7 @@ import 'package:optimeal/features/notification/data/notification_service.dart';
 import 'package:optimeal/features/notification/domain/notification_planner.dart';
 import 'package:optimeal/features/pantry/data/photo_store.dart';
 import 'package:optimeal/features/profile/application/logout.dart';
-import 'package:optimeal/features/recipes/data/recipe_photo_store.dart';
+import 'package:optimeal/features/recipes/data/recipe_image_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _FakePhotoStore extends PhotoStore {
@@ -51,7 +51,7 @@ class _FakeNotificationService implements NotificationService {
   ) async {}
 }
 
-class _FakeRecipePhotoStore extends RecipePhotoStore {
+class _FakeRecipeImageStore extends RecipeImageStore {
   bool cleared = false;
 
   @override
@@ -85,18 +85,18 @@ void main() {
     final container = await containerWithSession();
     final photos = _FakePhotoStore();
     final notifications = _FakeNotificationService();
-    final recipePhotos = _FakeRecipePhotoStore();
+    final recipeImages = _FakeRecipeImageStore();
 
     await clearLocalSessionData(
       notifications: notifications,
       photos: photos,
-      recipePhotos: recipePhotos,
+      recipeImages: recipeImages,
       sync: container.read(syncStatusProvider.notifier),
       userId: uid,
     );
 
     expect(notifications.cancelled, isTrue);
-    expect(recipePhotos.cleared, isTrue);
+    expect(recipeImages.cleared, isTrue);
     expect(photos.cleared, isTrue);
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('recipes.favorites.$uid'), isNull);
@@ -112,7 +112,7 @@ void main() {
     await clearLocalSessionData(
       notifications: _FakeNotificationService(fails: true),
       photos: photos,
-      recipePhotos: _FakeRecipePhotoStore(),
+      recipeImages: _FakeRecipeImageStore(),
       sync: container.read(syncStatusProvider.notifier),
       userId: uid,
     );

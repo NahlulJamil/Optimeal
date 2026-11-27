@@ -6,6 +6,8 @@ export interface Env {
   GEMINI_MODEL: string;
   /** Daftar model cadangan, dipisah koma (opsional). */
   GEMINI_FALLBACK_MODELS?: string;
+  /** Binding Workers AI untuk gambar resep (wrangler.jsonc bagian `ai`). */
+  AI: Ai;
 }
 
 class ApiError extends Error {
@@ -121,6 +123,9 @@ export default {
       }
       if (path === "/generate-recipes") {
         return json(await generateRecipes(request, env));
+      }
+      if (path === "/generate-recipe-image") {
+        return json(await generateRecipeImage(request, env));
       }
 
       throw new ApiError(404, "NOT_FOUND", "Endpoint not found");
@@ -409,6 +414,71 @@ async function generateRecipes(request: Request, env: Env) {
   return { recipes };
 }
 
+// Gambar resep dibuat Workers AI (paket Free: 10.000 neuron per hari, bila
+// habis permintaan gagal tanpa tagihan). Gambar tidak disimpan di Worker.
+async function generateRecipeImage(request: Request, env: Env) {
+  const body = await readJson<{
+    name?: unknown;
+    cuisine?: unknown;
+    ingredients?: unknown;
+  }>(request);
+
+  const name = typeof body.name === "string" ? oneLine(body.name, 120) : "";
+  if (!name) {
+    throw new ApiError(400, "INVALID_INPUT", "name is required");
+  }
+  const cuisine =
+    typeof body.cuisine === "string" ? oneLine(body.cuisine, 40) : "";
+  const ingredients = (
+    Array.isArray(body.ingredients) ? body.ingredients : []
+  )
+    .filter(isNonEmptyText)
+    .slice(0, MAX_IMAGE_INGREDIENTS)
+    .map((item) => oneLine(item, 60));
+
+  const prompt = [
+    `Realistic food photography of the dish "${name}"`,
+    cuisine ? `, ${cuisine} cuisine` : "",
+    ingredients.length ? `, made with ${ingredients.join(", ")}` : "",
+    ". One plated serving, close-up, natural light, appetizing. ",
+    "No text, no watermark, no people.",
+  ].join("");
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let image: string | undefined;
+  try {
+    const result = await Promise.race([
+      env.AI.run("@cf/black-forest-labs/flux-1-schnell", {
+        prompt,
+        steps: 4,
+      }),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new ApiError(504, "TIMEOUT", "AI request timed out")),
+          45_000,
+        );
+      }),
+    ]);
+    image = result.image;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    // Detail hanya masuk log Worker, tidak pernah dikirim ke client.
+    console.error("Workers AI failure", String(error).slice(0, 300));
+    // 4006: jatah neuron harian habis; 3040: kapasitas penuh sementara.
+    if (/4006|3040|neurons|capacity|rate limit/i.test(String(error))) {
+      throw new ApiError(429, "RATE_LIMITED", "AI quota reached");
+    }
+    throw new ApiError(500, "AI_FAILURE", "AI request failed");
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (!image) {
+    throw new ApiError(500, "AI_FAILURE", "AI returned no image");
+  }
+  return { imageBase64: image, mimeType: "image/jpeg" };
+}
+
 // ---------------------------------------------------------------------------
 // Gemini
 // ---------------------------------------------------------------------------
@@ -645,6 +715,7 @@ function categoryFromCatalog(categories: string | undefined): string {
 }
 
 const MAX_INGREDIENTS = 60;
+const MAX_IMAGE_INGREDIENTS = 8;
 const STORAGE_LOCATIONS = new Set(["room_temperature", "fridge", "freezer"]);
 
 /** Satu baris, tanpa karakter kontrol, dipotong ke [max] karakter. */

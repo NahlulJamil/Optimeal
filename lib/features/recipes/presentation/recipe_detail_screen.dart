@@ -218,7 +218,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    RecipePhotoCredit(recipe: recipe),
+                    RecipeImageNote(recipe: recipe),
                   ],
                 ),
               ),

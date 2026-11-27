@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// Stand-in picture while a recipe has no photo (PRD §6.3): a tinted tile with
+/// Stand-in while a recipe has no generated picture (PRD §6.3): a tinted tile with
 /// an icon chosen by cuisine from [illustrationKey] (`recipe_<cuisine>[_name]`).
 /// It is built in, so it also shows offline.
 class RecipeIllustration extends StatelessWidget {

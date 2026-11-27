@@ -10,6 +10,10 @@
   "observability": {
     "enabled": true
   },
+  // Workers AI untuk gambar resep (/generate-recipe-image).
+  "ai": {
+    "binding": "AI"
+  },
   "vars": {
     "FIREBASE_PROJECT_ID": "optimeal-firebase",
     "GEMINI_MODEL": "gemini-3.8-flash",
