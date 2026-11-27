@@ -49,3 +49,31 @@ String? validatePasswordConfirmation(String? value, String password) {
   if (value != password) return 'Passwords do not match.';
   return null;
 }
+
+/// Password rules shown on Profile → Password (Figma "Change Your Password"):
+/// minimum 8 characters, at least one uppercase letter (A-Z), at least one
+/// number (0-9).
+String? validateNewPassword(String? value) {
+  final password = value ?? '';
+  if (password.isEmpty) return 'Enter your new password.';
+  if (password.length < kMinPasswordLength) {
+    return 'Use at least $kMinPasswordLength characters.';
+  }
+  if (!password.contains(RegExp(r'[A-Z]'))) {
+    return 'Include at least one uppercase letter (A-Z).';
+  }
+  if (!password.contains(RegExp(r'[0-9]'))) {
+    return 'Include at least one number (0-9).';
+  }
+  return null;
+}
+
+String? validateOptionalPhoneNumber(String? value) {
+  final raw = (value ?? '').trim();
+  if (raw.isEmpty) return null;
+  final digits = raw.replaceAll(RegExp(r'[\s-]'), '');
+  if (!RegExp(r'^\d{6,15}$').hasMatch(digits)) {
+    return 'Enter a valid phone number (6–15 digits).';
+  }
+  return null;
+}

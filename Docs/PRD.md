@@ -2,7 +2,7 @@
 
 # OPTIMEAL — SMART FOOD MANAGEMENT
 
-**Versi:** 1.12
+**Versi:** 1.14
 
 **Platform:** Mobile Application (Android)
 
@@ -10,9 +10,9 @@
 
 **Framework:** Flutter
 
-**Terakhir diperbarui:** 24 November 2026
+**Terakhir diperbarui:** 27 November 2026
 
-> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Versi 1.13 menetapkan **implementasi halaman Profile** dari frame Figma "profile", **perilaku foto profil** tanpa Cloud Storage, dan **pembersihan data lokal saat logout**. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
+> **Catatan revisi:** Versi 1.2 menetapkan arsitektur **nol biaya tanpa billing account**. Versi 1.3 menambahkan **aturan penggunaan AI** pada **Bagian 13**. Versi 1.4 menyelaraskan PRD dengan desain **Figma "Balomba"** sebagai acuan visual dan fungsional (Scan Barcode, Dark Mode, Language, Edit food details, menu Profile lengkap, UI berbahasa Inggris). Versi 1.5 menambahkan **aturan alur kerja Git untuk AI** (branch per fitur, merge ke `main`, commit & push) pada **Bagian 13.7**. Versi 1.6 menambahkan pustaka **mobile_scanner** untuk mode Barcode (disetujui Developer 2). Versi 1.7 menambahkan pustaka **camera** agar mode Scan Food memotret langsung di dalam aplikasi. Versi 1.8 menetapkan **verifikasi akun melalui link email Firebase** (bukan OTP) pada Bagian 3.1. Versi 1.9 menetapkan **file Figma bersifat hanya-baca (read-only) bagi AI** pada Bagian 13.2 butir 4. Versi 1.10 menambahkan **Lupa sandi** dan **persetujuan Syarat & Ketentuan** pada Bagian 3.1, serta menetapkan **font Inter + Lora** sebagai tipografi aplikasi. Versi 1.11 menetapkan **tema terang saja (Light Mode)** dan **antarmuka hanya berbahasa Inggris**, sehingga **Dark Mode** dan **Language** dicabut dari lingkup produk. Versi 1.12 menetapkan **penempatan baris status sinkronisasi** di Pantry sebagai pemenuhan Bagian 7.5 yang belum digambar di Figma. Versi 1.13 menetapkan **implementasi halaman Profile** dari frame Figma "profile", **perilaku foto profil** tanpa Cloud Storage, dan **pembersihan data lokal saat logout**. Versi 1.14 menambahkan **toggle Notifications langsung di Profile Hub** serta **sub-screen Profile Details, Password, Support, dan About**. Daftar perubahan dan keputusan desain dapat dilihat pada **Bagian 12**.
 
 ---
 
@@ -405,11 +405,11 @@ Profile digunakan untuk mengelola informasi dan preferensi akun pengguna.
 - Pengguna dapat melihat informasi profil: foto, nama, dan email.
 - Foto profil ditampilkan dari `photoURL` akun Firebase bila tersedia. Akun email/sandi tidak memiliki foto, sehingga avatar menampilkan inisial nama. Tidak ada fitur unggah foto profil karena aplikasi tidak memakai Cloud Storage (Bagian 5.6).
 - Halaman Profile menampilkan daftar menu berikut:
-  - **Profile Details** — melihat dan mengubah nama/informasi profil.
-  - **Password** — mengubah kata sandi akun.
-  - **Notifications** — mengatur notifikasi (aktif/nonaktif dan ambang hari).
-  - **Support** — halaman bantuan/kontak dukungan.
-  - **About** — informasi aplikasi dan versi.
+  - **Profile Details** — melihat dan mengubah Display Name, Full Name, serta nomor telepon pengguna (Email ditampilkan read-only), beserta tombol **Logout**.
+  - **Password** — mengubah kata sandi akun (minimal 8 karakter, 1 huruf besar `A-Z`, 1 angka `0-9`).
+  - **Notifications** — toggle aktif/nonaktif langsung pada baris menu Profile untuk menyalakan atau mematikan pengingat lokal. Ambang hari tidak memiliki kontrol UI dan memakai nilai bawaan `1`.
+  - **Support** — halaman bantuan (*How can we help?*) dengan kartu **Contact support** yang mengarahkan ke Instagram resmi tim.
+  - **About** — informasi dan ringkasan fitur aplikasi Optimeal.
 - Pengguna dapat melakukan logout melalui tombol **Logout** di bagian bawah halaman.
 - Perubahan profil, kata sandi, dan preferensi notifikasi memerlukan koneksi internet.
 - Tema aplikasi tetap **terang** dan bahasa antarmuka tetap **English**; tidak ada menu Dark Mode atau Language.
@@ -653,7 +653,7 @@ Informasi yang disimpan:
 - Nama pengguna.
 - Email.
 - Password authentication (dikelola oleh Firebase Authentication).
-- Preferensi notifikasi (aktif/nonaktif, ambang hari).
+- Preferensi notifikasi (aktif/nonaktif); ambang hari memakai nilai bawaan `1`.
 - Waktu pembuatan dan pembaruan akun.
 
 ## 6.2 Food Inventory Data
@@ -998,6 +998,11 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 3. **Logout menghapus data lokal sebelum mengakhiri sesi:** foto bahan (`PhotoStore.clear`), favorit dan kuota resep (`LocalRecipeStore.clear`), serta waktu sinkronisasi terakhir (`SyncStatusController.clear`). Kegagalan salah satu langkah tidak boleh menahan proses logout.
 4. **Sub-screen Profile Details, Password, Support, dan About** sudah tersedia di Figma dan diimplementasikan menyusul; **Notifications** belum memiliki frame sehingga barisnya belum dapat diaktifkan.
 
+### v1.13 → v1.14
+
+1. **Toggle Notifications langsung di Profile Hub:** sesuai desain Figma terbaru, baris **Notifications** memakai switch on/off langsung (menyimpan `notificationsEnabled` ke `users/{uid}` dan menyinkronkan `NotificationPlanner` lokal). Perubahan tetap terkunci saat offline. Ambang hari tidak memiliki kontrol UI dan memakai nilai bawaan `1`.
+2. **Sub-screen Profile diimplementasikan:** **Profile Details** (Display Name, Full Name, Email read-only, Telephone `+62`, Save, Logout), **Change Your Password** (validasi ≥ 8 karakter, ≥ 1 huruf kapital, ≥ 1 angka, re-autentikasi bila diminta Firebase), **Support** (*Contact support* membuka tautan Instagram dukungan), dan **About** (deskripsi dan ringkasan fitur Optimeal), dengan bottom navigation bar tetap tampil.
+
 ## 12.2 Keputusan yang Diambil
 
 | Topik | Keputusan | Alasan |
@@ -1042,6 +1047,7 @@ Keberhasilan pengembangan Optimeal dapat dievaluasi melalui beberapa indikator:
 10. **Aksi hapus resep** menghapus data dari cache dan favorit; perlu dialog konfirmasi agar tidak menghapus favorit pengguna secara tidak sengaja.
 11. **Baris status sinkronisasi belum ada di Figma.** Frame Pantry tidak memiliki slot untuk waktu sinkronisasi terakhir yang diwajibkan Bagian 7.5. Penempatan saat ini (di bawah chip lokasi) adalah keputusan implementasi; tim perlu menambahkan elemen ini ke Figma atau menyetujui penempatannya secara resmi.
 12. **Logout sudah diimplementasikan** dan membersihkan data lokal: foto (`PhotoStore.clear`), favorit dan kuota resep (`LocalRecipeStore.clear`), serta waktu sinkronisasi terakhir (`SyncStatusController.clear`). Pembersihan berjalan best-effort agar kegagalan salah satu langkah tidak menahan logout.
+13. **Ambang hari notifikasi tidak dapat diubah pengguna.** Baris **Notifications** di Profile hanya menyalakan atau mematikan pengingat; tidak ada kontrol UI untuk ambang hari. Nilai `notificationThresholdDays` memakai default `1` dan dibaca oleh `NotificationPlanner`. Keputusan ini diambil agar sesuai dengan desain Profile yang hanya menampilkan switch on/off.
 
 ---
 

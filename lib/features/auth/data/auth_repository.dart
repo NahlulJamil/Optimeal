@@ -162,6 +162,50 @@ class AuthRepository {
 
   Future<void> signOut() => _auth.signOut();
 
+  /// Updates the Firebase Auth display name for the active session.
+  Future<void> updateDisplayName(String name) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthFailure('Your session has expired. Please sign in again.');
+    }
+    try {
+      await user.updateDisplayName(name.trim());
+      await user.reload();
+    } on FirebaseAuthException catch (error) {
+      throw AuthFailure.fromCode(error.code);
+    }
+  }
+
+  /// Updates the user's password. When [currentPassword] is supplied,
+  /// re-authenticates first so Firebase accepts the change even after an old
+  /// sign-in.
+  Future<void> changePassword({
+    required String newPassword,
+    String? currentPassword,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthFailure('Your session has expired. Please sign in again.');
+    }
+    try {
+      if (currentPassword != null && currentPassword.isNotEmpty) {
+        final email = user.email;
+        if (email == null || email.isEmpty) {
+          throw const AuthFailure('Please sign in again to continue.');
+        }
+        await user.reauthenticateWithCredential(
+          EmailAuthProvider.credential(
+            email: email,
+            password: currentPassword,
+          ),
+        );
+      }
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (error) {
+      throw AuthFailure.fromCode(error.code);
+    }
+  }
+
   Future<void> _createProfile(User user, String name) {
     return _firestore.collection('users').doc(user.uid).set({
       'uid': user.uid,

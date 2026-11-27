@@ -18,6 +18,7 @@ import 'features/notification/application/notification_providers.dart';
 import 'features/notification/domain/notification_planner.dart';
 import 'features/pantry/presentation/food_detail_screen.dart';
 import 'features/pantry/presentation/pantry_screen.dart';
+import 'features/profile/application/profile_providers.dart';
 import 'features/profile/presentation/profile_screen.dart';
 import 'features/recipes/presentation/recipe_detail_screen.dart';
 import 'features/recipes/presentation/recipes_screen.dart';
@@ -124,6 +125,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   final _homeNavigator = GlobalKey<NavigatorState>();
   final _pantryNavigator = GlobalKey<NavigatorState>();
   final _recipesNavigator = GlobalKey<NavigatorState>();
+  final _profileNavigator = GlobalKey<NavigatorState>();
   StreamSubscription<String>? _taps;
 
   @override
@@ -178,7 +180,8 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    // Keeps local reminders in sync with the pantry and preferences.
+    // Keeps local reminders and saved profile preferences in sync.
+    ref.watch(profileControllerProvider);
     ref.watch(notificationSyncProvider);
     return Scaffold(
       body: IndexedStack(
@@ -218,7 +221,11 @@ class _AppShellState extends ConsumerState<AppShell> {
               ),
             ),
           ),
-          const ProfileScreen(),
+          Navigator(
+            key: _profileNavigator,
+            onGenerateRoute: (_) =>
+                MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
+          ),
         ],
       ),
       bottomNavigationBar: AppBottomNav(

@@ -2,7 +2,7 @@
 
 **Versi:** 1.10
 
-**Mengacu pada:** PRD Optimeal v1.10
+**Mengacu pada:** PRD Optimeal v1.14
 
 Pengembangan dilakukan oleh tiga developer dengan pembagian tanggung jawab berdasarkan modul.
 

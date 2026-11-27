@@ -2,7 +2,7 @@
 
 **Versi:** 1.0
 
-**Mengacu pada:** PRD Optimeal v1.4 dan DevelopmentPlan v1.4
+**Mengacu pada:** PRD Optimeal v1.14 dan DevelopmentPlan v1.10
 
 **Pemilik:** Developer 1 (Core Application, Backend & Integrasi)
 
@@ -184,13 +184,16 @@ Path: `users/{uid}`
 | Field | Tipe | Nullable | Keterangan |
 |---|---|---|---|
 | `uid` | String | ❌ | Firebase UID. |
-| `name` | String | ❌ | — |
+| `name` | String | ❌ | Display Name pengguna. |
+| `fullName` | String | ✅ | Nama lengkap pengguna (opsional). |
 | `email` | String | ❌ | — |
 | `photoUrl` | String | ✅ | URL foto profil Firebase (bukan foto bahan). |
+| `phoneCountryCode` | String | ✅ | Kode negara telepon, default `+62`. |
+| `phoneNumber` | String | ✅ | Nomor telepon pengguna (opsional). |
 | `themeMode` | `ThemeMode` | ❌ | Default `light`. |
 | `language` | `Language` | ❌ | Default `en`. |
 | `notificationsEnabled` | Boolean | ❌ | Default `true`. |
-| `notificationThresholdDays` | Integer | ❌ | 1–3, default `1`. |
+| `notificationThresholdDays` | Integer | ❌ | Default `1`; tidak ada kontrol UI pada versi ini. |
 | `createdAt` | Timestamp | ❌ | — |
 | `updatedAt` | Timestamp | ❌ | — |
 
