@@ -1,8 +1,8 @@
 # 1. DEVELOPMENT PLAN
 
-**Versi:** 1.11
+**Versi:** 1.12
 
-**Mengacu pada:** PRD Optimeal v1.14
+**Mengacu pada:** PRD Optimeal v1.16
 
 Pengembangan dilakukan oleh tiga developer dengan pembagian tanggung jawab berdasarkan modul.
 
@@ -32,6 +32,7 @@ Tanggung jawab:
   - endpoint `POST /analyze-food`
   - endpoint `POST /analyze-barcode`
   - endpoint `POST /generate-recipes`
+  - endpoint `POST /generate-recipe-image` (binding Workers AI)
   - menyimpan API key sebagai secret
   - memvalidasi Firebase ID token
 - Menetapkan kontrak data bersama (model `FoodItem`, `Recipe`, `Notification`, `FavoriteRecipe`).
@@ -76,7 +77,7 @@ Tanggung jawab:
 - Filter lokasi penyimpanan bahan (`room_temperature`/`fridge`/`freezer`, label UI Pantry/Fridge/Freezer), filter cuisine, dan pemilihan bahan tertentu.
 - Integrasi endpoint `generate-recipes`.
 - Halaman daftar rekomendasi dan detail resep (bahan, peralatan, teknik memasak, langkah).
-- Pencarian foto resep di Wikimedia Commons, penyimpanan di perangkat, kredit foto, dan ikon cadangan (PRD 6.3).
+- Gambar resep buatan AI: panggilan `generate-recipe-image`, penyimpanan di perangkat, keterangan buatan AI, dan ikon cadangan (PRD 6.3).
 - Penanganan cache resep (10 resep/pengguna, TTL 7 hari) dan pesan saat kuota generate tercapai.
 - Fitur Resep Favorit: tambah/hapus, tab Favorit pada halaman Recipe Finder, akses offline dari snapshot lokal.
 - Aksi **hapus resep** pada halaman detail (dengan dialog konfirmasi), termasuk pembersihan cache dan favorit terkait.
@@ -92,7 +93,7 @@ Tanggung jawab:
 - Menyepakati kontrak endpoint Cloudflare Worker (input/output/error).
 - Menyiapkan fixture JSON untuk mock data.
 - Menetapkan struktur folder dan aturan penamaan.
-- Menyepakati sumber foto resep dan ikon cadangannya.
+- Menyepakati sumber gambar resep dan ikon cadangannya.
 
 **Tahap 1 — Project Setup**
 
@@ -252,6 +253,29 @@ Output sukses:
 
 Error: sama seperti di atas, ditambah `422` bila daftar bahan kosong.
 
+### 4. `POST /generate-recipe-image`
+
+Input:
+
+```
+{
+  name: string,
+  cuisine: string | null,
+  ingredients: [ string ]
+}
+```
+
+Output sukses:
+
+```
+{
+  imageBase64: string,
+  mimeType: "image/jpeg"
+}
+```
+
+Error: `400` nama resep kosong, `401` token tidak valid, `429` kuota Workers AI habis, `500` kegagalan layanan AI, `504` timeout.
+
 **Ketentuan Worker:**
 
 - API key Gemini **hanya** ada di secret Worker, tidak pernah dikirim ke client.
@@ -326,4 +350,5 @@ Periksa sebelum demo:
 - [ ] Tidak ada billing account yang terhubung ke project.
 - [ ] API key Gemini hanya ada di secret Cloudflare Worker.
 - [ ] Penggunaan Gemini masih dalam batas free tier.
+- [ ] Workers AI tetap pada paket Free (10.000 neuron/hari, tanpa Workers Paid).
 - [ ] Tidak ada dependensi ke layanan pihak ketiga berbayar.
