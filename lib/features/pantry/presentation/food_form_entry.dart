@@ -17,14 +17,15 @@ class FoodFormEntry {
     required this.purchaseDate,
     this.estimate,
     this.quantityText = '',
-    this.visualCondition,
+    String? visualCondition,
     this.aiNote,
     this.confidence,
     this.photoBytes,
     this.photoFile,
     int? shelfLifeDays,
     this.manualShelfLife = false,
-  }) : _category = normalizeCategory(category) {
+  }) : conditionText = visualCondition ?? '',
+       _category = normalizeCategory(category) {
     _shelfLifeDays = shelfLifeDays ?? _defaultShelfLifeDays;
   }
 
@@ -48,7 +49,10 @@ class FoodFormEntry {
   DateTime purchaseDate;
   String quantityText;
   final ShelfLifeEstimate? estimate;
-  final String? visualCondition;
+
+  /// "Condition" field: how the food looks. Filled by the scan when the AI
+  /// describes it, and correctable before saving (PRD §3.3).
+  String conditionText;
   final String? aiNote;
   final double? confidence;
   final Uint8List? photoBytes;
@@ -143,7 +147,9 @@ class FoodFormEntry {
       storageLocation: _location,
       purchaseDate: dateOnly(purchaseDate),
       shelfLifeDays: _shelfLifeDays,
-      visualCondition: visualCondition,
+      visualCondition: conditionText.trim().isEmpty
+          ? null
+          : conditionText.trim(),
       aiNote: aiNote,
       hasPhoto: photoBytes != null,
     );

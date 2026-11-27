@@ -246,6 +246,9 @@ class _FoodFormScreenState extends ConsumerState<FoodFormScreen> {
                             key: ObjectKey(_current),
                             entry: _current,
                             canRemove: !widget.isEdit || canWrite,
+                            // The condition describes the scan; it is not
+                            // editable once saved (PRD §3.4).
+                            showCondition: !widget.isEdit,
                             onRemove: () => _removeEntry(_selected),
                             onChanged: () => setState(() => _error = null),
                           ),
@@ -521,12 +524,14 @@ class _FormCard extends StatefulWidget {
     super.key,
     required this.entry,
     required this.canRemove,
+    required this.showCondition,
     required this.onRemove,
     required this.onChanged,
   });
 
   final FoodFormEntry entry;
   final bool canRemove;
+  final bool showCondition;
   final VoidCallback onRemove;
   final VoidCallback onChanged;
 
@@ -541,6 +546,9 @@ class _FormCardState extends State<_FormCard> {
   late final TextEditingController _qty = TextEditingController(
     text: widget.entry.quantityText,
   );
+  late final TextEditingController _condition = TextEditingController(
+    text: widget.entry.conditionText,
+  );
 
   FoodFormEntry get e => widget.entry;
 
@@ -548,6 +556,7 @@ class _FormCardState extends State<_FormCard> {
   void dispose() {
     _name.dispose();
     _qty.dispose();
+    _condition.dispose();
     super.dispose();
   }
 
@@ -716,6 +725,31 @@ class _FormCardState extends State<_FormCard> {
             text: formatDisplayDate(e.estimatedEndDate),
             onTap: _pickEndDate,
           ),
+          if (widget.showCondition) ...[
+            const SizedBox(height: 16),
+            const _Label('Condition'),
+            TextField(
+              controller: _condition,
+              minLines: 2,
+              maxLines: 4,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: _fieldDecoration(
+                hint: 'e.g. Skin is firm, color still bright',
+              ),
+              onChanged: (v) => _update(() => e.conditionText = v),
+            ),
+            if (e.aiNote case final note? when note.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  'AI note: $note',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+          ],
         ],
       ),
     );

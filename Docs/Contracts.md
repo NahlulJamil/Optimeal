@@ -1,8 +1,8 @@
 # KONTRAK DATA & API — OPTIMEAL
 
-**Versi:** 1.1
+**Versi:** 1.2
 
-**Mengacu pada:** PRD Optimeal v1.14 dan DevelopmentPlan v1.11
+**Mengacu pada:** PRD Optimeal v1.15 dan DevelopmentPlan v1.11
 
 **Pemilik:** Developer 1 (Core Application, Backend & Integrasi)
 
@@ -78,7 +78,7 @@ Path: `users/{uid}/pantry/{foodId}`
 | `purchaseDate` | Timestamp | ❌ | Pengguna | Default hari ini, pukul 00:00 lokal. |
 | `shelfLifeDays` | Integer | ❌ | AI / pengguna | ≥ 1. Bisa di-override manual. |
 | `estimatedEndDate` | Timestamp | ❌ | Sistem | `purchaseDate + shelfLifeDays`. Dihitung ulang setiap kali salah satu berubah. |
-| `visualCondition` | String | ✅ | AI | Boleh kosong untuk hasil barcode. |
+| `visualCondition` | String | ✅ | AI / pengguna | Boleh kosong untuk hasil barcode. Dapat dikoreksi sebelum disimpan. |
 | `aiNote` | String | ✅ | AI | Opsional. |
 | `hasPhoto` | Boolean | ❌ | Sistem | Default `false`. |
 | `createdAt` | Timestamp | ❌ | Sistem | — |
@@ -383,3 +383,4 @@ Aturan fixture:
 |---|---|---|
 | 1.0 | 19 Nov 2026 | Versi awal: model `FoodItem`, `Recipe`, `FavoriteRecipe`, `NotificationRecord`, `UserProfile`; endpoint `analyze-food`, `analyze-barcode`, `generate-recipes`; enum `storageLocation` memakai `room_temperature`. |
 | 1.1 | 27 Nov 2026 | `illustrationKey` menjadi kunci ikon cadangan karena foto resep kini dari Wikimedia Commons (PRD v1.14). Tidak ada perubahan field atau endpoint. |
+| 1.2 | 27 Nov 2026 | `visualCondition` dapat dikoreksi pengguna pada form *Add Food* (PRD v1.15). Tidak ada perubahan field atau endpoint. |
